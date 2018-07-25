@@ -48,12 +48,14 @@ rule [el.name/]_Match2[el.name/]_without_subconflicts {
 			and not m.left.oclIsUndefined() 
 			and m.origin.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if])
 			and not m.differences.isEmpty()
-			and if (m.differences ->collect(e | e.conflict)->select(i | not i.oclIsUndefined()).isEmpty()) -- no sub-conflicts on containment relations
+			and if (m.differences ->collect(e | e.conflict)->select(i | not i.oclIsUndefined()).isEmpty()) -- no sub-conflicts on containment relations and on attribute changes
 					then true 
 					else not (m.differences ->collect(e | e.conflict)
-								->select(i | not i.oclIsUndefined()))
+								->select(i | not i.oclIsUndefined())
 								->select(e | e.differences.oclIsTypeOf(compareMM!ReferenceChange))
-								->exists(i | i.differences.first().reference.containment = true)
+								->exists(i | i.differences.first().reference.containment = true) or not m.differences ->collect(e | e.conflict)
+																										->select(i | not i.oclIsUndefined())
+																										->select(e | e.differences.first().oclIsTypeOf(compareMM!AttributeChange)).isEmpty())
 					endif
 		)
 	using {		
@@ -117,7 +119,7 @@ rule real_referenceChange2[el.name/] {
 			[/if]
 			[for (ref : EReference | el.eAllReferences)separator(',\n')] [if (ref.containment = true)]
 			[ref.name/] <- (rf.requiredBy ->select(e | e.reference.name = '[ref.name/]'))[else] [if (ref.upperBound = 1)]
-			[ref.name/] <- if (not rf.value.[ref.name/].oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]))->select(e | e.origin.[el.eAllAttributes->first().name/] = rf.value.[ref.name/].first().[el.eAllAttributes->first().name/]) else OclUndefined endif[else]
+			[ref.name/] <- if (not rf.value.[ref.name/].oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]))->select(e | e.origin.[el.eAllAttributes->first().name/] = rf.value.[ref.name/].[el.eAllAttributes->first().name/]) else OclUndefined endif[else]
 			[ref.name/] <- if (not rf.value.[ref.name/].isEmpty()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | rf.value.[ref.name/].includes(e.origin)) else OclUndefined endif[/if][/if][/for]
 			
 		)

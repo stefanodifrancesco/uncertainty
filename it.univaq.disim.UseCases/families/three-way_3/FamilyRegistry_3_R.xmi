@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Families:FamilyRegistry
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:Families="http://it.univaq.disim/uncertainty.ufamily"
+    xsi:schemaLocation="http://it.univaq.disim/uncertainty.ufamily UFamily.ecore">
+  <families
+      xsi:type="Families:Family"
+      lastName="DR">
+    <sons xsi:type="Families:Member"
+        firstName="Juri"
+        age="10"/>
+    <sons xsi:type="Families:Member"
+        firstName="Paul"/>
+    <daughters
+        xsi:type="Families:Member"
+        firstName="Cloe"
+        age="1"/>
+    <mother
+        xsi:type="Families:Member"
+        firstName="Giorgia"
+        age="32"/>
+  </families>
+</Families:FamilyRegistry>
