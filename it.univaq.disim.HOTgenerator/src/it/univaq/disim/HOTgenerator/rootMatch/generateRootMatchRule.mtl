@@ -1,0 +1,59 @@
+[comment encoding = UTF-8 /]
+[module generateRootMatchRule('http://www.eclipse.org/emf/2002/Ecore')]
+
+[template public generate_rootMatchRule(model : EPackage, el : EClass, p : EPackage)  { modelName: String = model.name; } ]
+rule rootMatch2[el.name/] {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if])
+		)
+	using {		
+			attributes_changes   : compareMM!AttributeChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!AttributeChange));
+			reference_changes    : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange));
+			noContainmentReferences : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))->select(e | e.reference.containment = false);
+
+
+			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = true)]
+			[if (ref.upperBound = 1)]
+			[ref.name/]_submatch : compareMM!Match = m.submatches ->select(e | m.origin.[ref.name/] = e.origin);			
+			[else]
+			[ref.name/]_submatch : compareMM!Match = m.submatches  ->select(e | m.origin.[ref.name/].includes(e.origin));
+			[/if][/if]
+			[/for]
+
+			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = true)]
+			[ref.name/]_ref_changes : compareMM!ReferenceChange = reference_changes ->select(e | e.reference.name = '[ref.name/]');[/if]
+			[/for]
+
+			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = false)]
+			[ref.name/]_ref_changes : compareMM!ReferenceChange = noContainmentReferences ->select(e | e.reference.name = '[ref.name/]');[/if]
+			[/for]
+			
+			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = true)]
+			[ref.name/]_attr_conflict : compareMM!Conflict = ([ref.name/]_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
+			[/if][/for]
+			
+			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = true)]
+			conflicting_[ref.name/] : compareMM!Conflict = (reference_changes ->select(e | e.reference.name = '[ref.name/]')) ->collect(e | e.conflict);[/if]
+			[/for]
+	}
+	to
+		f: [if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if] (
+			[if (not el.eAllAttributes->isEmpty())]
+			[for (attr : EAttribute | el.eAllAttributes)separator(',\n')]
+			[attr.name/] <- thisModule.get[el.name/]_[attr.name/](m, attributes_changes)[/for][if (not el.eAllReferences->isEmpty())],[/if]
+
+			[/if]
+			[for (ref : EReference | el.eAllReferences)separator(',\n')] [if (ref.containment = true)]
+			[if (ref.upperBound = 1)]			
+			[ref.name/] <- thisModule.get[el.name/]_[ref.name/]([ref.name/]_submatch, [ref.name/]_ref_changes, [ref.name/]_attr_conflict, conflicting_[ref.name/])[else]
+			[ref.name/] <- [ref.name/]_submatch.append([ref.name/]_ref_changes).append([ref.name/]_attr_conflict).append(conflicting_[ref.name/])[/if][else] [if (ref.upperBound = 1)]
+			[ref.name/] <- if (not m.origin.[ref.name/].oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]))->select(e | e.origin.[el.eAllAttributes->first().name/] = m.origin.[ref.name/].first().[el.eAllAttributes->first().name/]) else OclUndefined endif[else]
+			[ref.name/] <- thisModule.get[el.name/]_[ref.name/]([ref.name/]_ref_changes, m)[/if][/if][/for]
+			
+		)
+}
+[/template]

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="webapp" nsURI="https://it.univaq.disim.webapp" nsPrefix="webapp">
+  <eClassifiers xsi:type="ecore:EClass" name="Named" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral=""/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="WebApp" eSuperTypes="#//Named">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="clientPages" lowerBound="1"
+        upperBound="-1" eType="#//ClientPage" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="serverPages" lowerBound="1"
+        upperBound="-1" eType="#//ServerPage" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="entities" upperBound="-1"
+        eType="#//DataStructure" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="contentProviders" upperBound="-1"
+        eType="#//DataSourceManager" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="UIElementType">
+    <eLiterals name="input"/>
+    <eLiterals name="output" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ServerPage" eSuperTypes="#//Named">
+    <eOperations name="request"/>
+    <eOperations name="response"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="generates" lowerBound="1"
+        eType="#//ClientPage" eOpposite="#//ClientPage/connectsTo"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="getContents" lowerBound="1"
+        upperBound="-1" eType="#//DataSourceManager" eOpposite="#//DataSourceManager/providesContent"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="manages" lowerBound="1"
+        upperBound="-1" eType="#//DataStructure" eOpposite="#//DataStructure/managedBy"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DataStructure" eSuperTypes="#//Named">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="managedBy" lowerBound="1"
+        upperBound="-1" eType="#//ServerPage" eOpposite="#//ServerPage/manages"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parentOf" upperBound="-1"
+        eType="#//Attribute" containment="true" eOpposite="#//Attribute/attributeOf"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="linkedTo" upperBound="-1"
+        eType="#//Attribute" eOpposite="#//Attribute/linkedBy"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DataSourceManager" eSuperTypes="#//Named">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="providesContent" lowerBound="1"
+        upperBound="-1" eType="#//ServerPage" eOpposite="#//ServerPage/getContents"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Attribute" eSuperTypes="#//Named">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="attributeOf" lowerBound="1"
+        eType="#//DataStructure" eOpposite="#//DataStructure/parentOf"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="linkedBy" upperBound="-1"
+        eType="#//DataStructure" eOpposite="#//DataStructure/linkedTo"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ClientPage" eSuperTypes="#//Named">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="composedOf" upperBound="-1"
+        eType="#//UIElement" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="connectsTo" lowerBound="1"
+        eType="#//ServerPage" eOpposite="#//ServerPage/generates"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="UIElement" eSuperTypes="#//Named">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="#//UIElementType"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="content" lowerBound="1"
+        eType="#//DataStructure"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Form" eSuperTypes="#//UIElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ImageViewer" eSuperTypes="#//UIElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TextArea" eSuperTypes="#//UIElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Table" eSuperTypes="#//UIElement"/>
+</ecore:EPackage>

@@ -1,0 +1,19 @@
+[comment encoding = UTF-8 /]
+[**
+ * The documentation of the module generate.
+ */]
+[module generate('http://www.eclipse.org/emf/compare', 'http://www.eclipse.org/emf/2002/Ecore')]
+[import it::univaq::disim::HOTgenerator::fileGenerators::generatePSEUDOtransformation]
+[import it::univaq::disim::HOTgenerator::fileGenerators::generateNOPSEUDOtransformation]
+
+[**
+ * The documentation of the template generateElement.
+ * @param anEPackage
+ */]
+[template public generateElement(model : EPackage) ? (model.ancestors()->isEmpty())  { modelName: String = model.name; } ]
+[comment @main/]
+
+[generatePSEUDOtransformation(model)/]
+[generateNOPSEUDOtransformation(model)/]
+
+[/template]

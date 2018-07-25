@@ -1,0 +1,25 @@
+[comment encoding = UTF-8 /]
+[module generateNOPseudoConflictRules('http://www.eclipse.org/emf/2002/Ecore')]
+
+[template public generate_PseudoConflict_rules(model : EPackage, el : EClass, p : EPackage)  { modelName: String = model.name; } ]
+rule pseudo_referenceChange2[el.name/] {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]) 
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif
+			and rf.kind = #ADD
+			and rf.reference.containment = true
+		)
+	to
+		[el.name/]_ref: [if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if] (
+			[if (not el.eAllAttributes->isEmpty())]
+			[for (attr : EAttribute | el.eAllAttributes)separator(',\n')]
+			[attr.name/] <- rf.value.[attr.name/][/for][/if][if (not el.eAllReferences->isEmpty() and not el.eAllAttributes->isEmpty())],[/if]
+			[for (ref : EReference | el.eAllReferences)separator(',\n')] [if (ref.containment = true)]
+			[ref.name/] <- (rf.requiredBy ->select(e | e.reference.name = '[ref.name/]'))[else] [if (ref.upperBound = 1)]
+			[ref.name/] <- if (not rf.value.[ref.name/].oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]))->select(e | e.origin.[el.eAllAttributes->first().name/] = rf.value.[ref.name/].first().[el.eAllAttributes->first().name/]) else OclUndefined endif[else]
+			[ref.name/] <- if (not rf.value.[ref.name/].isEmpty()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | rf.value.[ref.name/].includes(e.origin)) else OclUndefined endif[/if][/if][/for]
+			
+		)
+}
+[/template]

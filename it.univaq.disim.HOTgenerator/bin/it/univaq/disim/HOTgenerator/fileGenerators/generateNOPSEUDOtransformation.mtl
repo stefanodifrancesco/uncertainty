@@ -1,0 +1,70 @@
+[comment encoding = UTF-8 /]
+[module generateNOPSEUDOtransformation('http://www.eclipse.org/emf/2002/Ecore')]
+[import it::univaq::disim::HOTgenerator::helpers::generateHelpers]
+[import it::univaq::disim::HOTgenerator::rootMatch::generateRootMatchRule]
+[import it::univaq::disim::HOTgenerator::rules::transformClasses01]
+[import it::univaq::disim::HOTgenerator::rules::transformClasses0N]
+[import it::univaq::disim::HOTgenerator::pseudoconflicts::generateNOPseudoConflictRules]
+
+
+[template public generateNOPSEUDOtransformation(model : EPackage)  { modelName: String = model.name; } ]
+
+[file ('compare2'.concat(modelName.concat('_NO_PSEUDOCONFLICTS.atl')), false, 'UTF-8')]
+-- @nsURI compareMM=http://www.eclipse.org/emf/compare
+
+module compare2U[modelName/];
+create OUT : U[modelName/]MM from IN : compareMM;
+
+[for (el : EClass | model.eContents(EClass))]
+[generateHelpers(model, el, null)/]
+[/for]
+
+[for (p : EPackage | model.eContents(EPackage))]
+[for (el : EClass | p.eContents(EClass))]
+[generateHelpers(model, el, p)/]
+[/for]
+[/for]
+
+[for (el : EClass | model.eContents(EClass))separator('\n\n')]
+[if (el.eInverse()->isEmpty() and not el.eAllSuperTypes->exists(e | not e.eInverse(EReference)->isEmpty()))]
+[generate_rootMatchRule(model, el, null)/]
+[else]
+[if (el.eInverse(EReference)->exists(e | e.upperBound = 1) or el.eAllSuperTypes->exists(e | e.eInverse(EReference)->exists(e | e.upperBound = 1)))]
+[generate_Rules_for_classes_with_multiplicity_0N(model, el, null)/]
+[else]
+[generate_Rules_for_classes_with_multiplicity_01(model, el, null)/]
+[/if]
+
+[/if][/for]
+
+[for (p : EPackage | model.eContents(EPackage))]
+[for (el : EClass | p.eContents(EClass))]
+[if (el.eInverse()->isEmpty() and not el.eAllSuperTypes->exists(e | not e.eInverse(EReference)->isEmpty()))]
+[generate_rootMatchRule(model, el, p)/]
+[else]
+[if (el.eInverse(EReference)->exists(e | e.upperBound = 1) or el.eAllSuperTypes->exists(e | e.eInverse(EReference)->exists(e | e.upperBound = 1)))]
+[generate_Rules_for_classes_with_multiplicity_0N(model, el, p)/]
+[else]
+[generate_Rules_for_classes_with_multiplicity_01(model, el, p)/]
+[/if]
+
+[/if]
+[/for]
+[/for]
+
+--************************************************************ NO PSEUDO CONFLICT ************************************************************--
+[for (el : EClass | model.eContents(EClass))separator('\n\n')]
+[if (not el.eInverse()->isEmpty())]
+[generate_PseudoConflict_rules(model, el, null)/]
+[/if][/for]
+
+[for (p : EPackage | model.eContents(EPackage))]
+[for (el : EClass | p.eContents(EClass))]
+[if (not el.eInverse()->isEmpty())]
+[generate_PseudoConflict_rules(model, el, p)/]
+[/if]
+[/for]
+[/for]
+--************************************************************ NO PSEUDO CONFLICT ************************************************************--
+[/file]
+[/template]

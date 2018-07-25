@@ -1,0 +1,92 @@
+[comment encoding = UTF-8 /]
+[module generatePseudoconflictsRules('http://www.eclipse.org/emf/2002/Ecore')]
+
+[template public generate_PseudoConflicts2uncertain_rules(model : EPackage, el : EClass, p : EPackage)  { modelName: String = model.name; } ]
+-- transform "PSEUDO conflicting [el.name/]" 2 uncertain [el.name/]
+rule PSEUDOconflicting[el.name/]2u[el.name/] {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().value.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if])
+			and cf.kind = #PSEUDO
+			and if (not cf.differences.first().requires.isEmpty()) then cf.differences.first().requires.first().conflict.kind = #REAL else true endif
+			and if (cf.differences.first().oclIsTypeOf(compareMM!ReferenceChange)) then cf.differences.first().reference.containment = true else true endif
+		)
+	to
+		conflicting_[el.name/]: U[modelName/]MM!u[el.name/] (
+			uleft  <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+-- transform "differences of PSEUDO conflicting [el.name/]" 2 left and right [el.name/]
+rule pseudo_referenceChange2[el.name/] {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if])
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif 
+			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) then rf.requires.first().conflict.kind = #REAL else true endif
+			and rf.reference.containment = true
+		)
+	using {		
+			[for (ref : EReference | el.eAllReferences)separator('\n')] [if (ref.containment = true)]
+			[ref.name/] : compareMM!ReferenceChange = rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange)) ->select(e | e.reference.name = '[ref.name/]');[/if][/for]
+	}
+	to
+		[el.name/]_ref: [if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if] (
+			[if (not el.eAllAttributes->isEmpty())]
+			[for (attr : EAttribute | el.eAllAttributes)separator(',\n')]
+			[attr.name/] <- rf.value.[attr.name/][/for][if (not el.eAllReferences->isEmpty())],[/if]
+
+			[/if]
+			[for (ref : EReference | el.eAllReferences)separator(',\n')] [if (ref.containment = false)]
+			[ref.name/] <- (rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))  ->select(e | e.reference.name = '[ref.name/]'))[else]
+			[ref.name/] <- [ref.name/] ->collect(e | e.conflict) ->collect(e | if (e.kind = #REAL) then thisModule.subREALConflicting[ref.eType.name/]2u[ref.eType.name/](e) else thisModule.subPSEUDOConflicting[ref.eType.name/]2u[ref.eType.name/](e) endif)[/if][/for]
+			
+		)
+}
+
+-- transform "conflicting [el.name/]" child of pseudo conflicting families 2 uncertain members (for REAL conflicts)
+lazy rule subREALConflicting[el.name/]2u[el.name/] {
+	from
+		cf: compareMM!Conflict 
+	to
+		um: U[modelName/]MM!u[el.name/] (
+			utype  <- #XOR,
+			uleft  <- (cf.differences ->select(e | e.source = #LEFT))  ->collect(e | thisModule.subPSEUDOreferenceChange2[el.name/](e)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT)) ->collect(e | thisModule.subPSEUDOreferenceChange2[el.name/](e))
+		)
+}
+-- transform "conflicting members" child of pseudo conflicting families 2 uncertain members (for PSEUDO conflicts)
+lazy rule subPSEUDOConflicting[el.name/]2u[el.name/] {
+	from
+		cf: compareMM!Conflict 
+	to
+		um: U[modelName/]MM!u[el.name/] (
+			utype  <- #OR,
+			uleft  <- (cf.differences ->select(e | e.source = #LEFT))  ->collect(e | thisModule.subPSEUDOreferenceChange2[el.name/](e)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT)) ->collect(e | thisModule.subPSEUDOreferenceChange2[el.name/](e))
+		)
+}
+
+lazy rule subPSEUDOreferenceChange2[el.name/] {
+	from 
+		rf: compareMM!ReferenceChange 
+	using {		
+			[for (ref : EReference | el.eAllReferences)separator('\n')] [if (ref.containment = false)]
+			[ref.name/]_link : compareMM!ReferenceChange = compareMM!ReferenceChange.allInstances()->select(e | e.reference.name = '[ref.name/]')->select(e | e.requires.includes(rf)).first();[/if]
+			[/for]
+	}
+	to
+		m: [if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if] (
+			[if (not el.eAllAttributes->isEmpty())]
+			[for (attr : EAttribute | el.eAllAttributes)separator(',\n')]
+			[attr.name/] <- rf.value.[attr.name/][/for][if (not el.eAllReferences->isEmpty())],[/if]
+
+			[/if]
+			[for (ref : EReference | el.eAllReferences)separator(',\n')] [if (ref.containment = true)]
+			[ref.name/] <- (rf.requiredBy ->select(e | e.reference.name = '[ref.name/]'))[else]
+			[ref.name/] <- if (not [ref.name/]_link.oclIsUndefined()) then ([ref.name/]_link.requires->select(e | e.reference.eType = [ref.name/]_link.reference.eType)) else OclUndefined endif[/if][/for]
+
+		)
+}
+[/template]

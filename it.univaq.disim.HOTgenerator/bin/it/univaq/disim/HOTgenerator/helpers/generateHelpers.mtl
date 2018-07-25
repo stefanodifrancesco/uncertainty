@@ -1,0 +1,41 @@
+[comment encoding = UTF-8 /]
+[module generateHelpers('http://www.eclipse.org/emf/2002/Ecore')]
+
+
+[template public generateHelpers(model : EPackage, el : EClass, p : EPackage)  { modelName: String = model.name; } ]
+[for (attr : EAttribute | el.eAllAttributes)separator('\n')]
+helper def : get[el.name/]_[attr.name/] ([el.name/]Match : compareMM!Match, attributes_changes : Sequence(compareMM!AttributeChange)) : String =
+	if ( not (attributes_changes ->select(e | e.attribute.name = '[attr.name/]')).isEmpty() )
+						then if ( (attributes_changes ->select(e | e.attribute.name = '[attr.name/]')).first().source = #LEFT )
+								then [el.name/]Match.left.[attr.name/]
+								else [el.name/]Match.right.[attr.name/]
+								endif
+						else [el.name/]Match.origin.[attr.name/] endif;
+[/for]
+
+[for (ref : EReference | el.eAllReferences)separator('\n')] [if (ref.containment = true)] [if (ref.upperBound = 1)]
+helper def : get[el.name/]_[ref.name/] ([ref.name/]_submatch:compareMM!Match, [ref.name/]_ref_changes:compareMM!ReferenceChange, [ref.name/]_attr_conflict:compareMM!Conflict, conflicting_[ref.name/]:compareMM!Conflict) : U[modelName/]MM![el.name/] =
+	if (not thisModule.resolveTemp(conflicting_[ref.name/].first(), 'conflicting_[ref.eType.name/]').oclIsUndefined()) 
+		then thisModule.resolveTemp(conflicting_[ref.name/].first(), 'conflicting_[ref.eType.name/]') 
+		else if (not thisModule.resolveTemp([ref.name/]_attr_conflict.first(), '[ref.eType.name/]_attr_conflict').oclIsUndefined()) 
+			then thisModule.resolveTemp([ref.name/]_attr_conflict.first(), '[ref.eType.name/]_attr_conflict') 
+			else if (not thisModule.resolveTemp([ref.name/]_ref_changes.first(), '[ref.eType.name/]_ref').oclIsUndefined())
+					then thisModule.resolveTemp([ref.name/]_ref_changes.first(), '[ref.eType.name/]_ref')
+					else thisModule.resolveTemp([ref.name/]_submatch.first(), 'conservative_[ref.eType.name/]') 
+			 	 endif
+			endif
+	endif;
+[/if][/if][/for]
+
+[for (ref : EReference | el.eAllReferences)separator('\n')] [if (ref.containment = false)] [if (ref.upperBound <> 1)]
+helper def : get[el.name/]_[ref.name/] ([ref.name/]_ref_changes : compareMM!ReferenceChange, [el.name/]_match : compareMM!Match) : Sequence(U[modelName/]MM![el.name/]) =
+	if (not [ref.name/]_ref_changes.first().oclIsUndefined()) 
+	then if ([ref.name/]_ref_changes.first().source = #LEFT) 
+			then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(U[modelName/]MM![el.name/]))
+					->select(e | [el.name/]_match.left.[ref.name/]->collect(e | e.[el.eAllAttributes->first().name/]).includes(e.origin.[el.eAllAttributes->first().name/]))
+			else compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(U[modelName/]MM![el.name/]))
+					->select(e | [el.name/]_match.right.[ref.name/]->collect(e | e.[el.eAllAttributes->first().name/]).includes(e.origin.[el.eAllAttributes->first().name/]))
+			endif
+	else compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | [el.name/]_match.origin.[ref.name/].includes(e.origin)) endif;
+[/if][/if][/for]
+[/template]
