@@ -184,12 +184,14 @@ rule Member_Match2Member_without_subconflicts {
 			and not m.left.oclIsUndefined() 
 			and m.origin.oclIsTypeOf(UFamiliesMM!"Families::Member")
 			and not m.differences.isEmpty()
-			and if (m.differences ->collect(e | e.conflict)->select(i | not i.oclIsUndefined()).isEmpty()) -- no sub-conflicts on containment relations
+			and if (m.differences ->collect(e | e.conflict)->select(i | not i.oclIsUndefined()).isEmpty()) -- no sub-conflicts on containment relations and on attribute changes
 					then true 
 					else not (m.differences ->collect(e | e.conflict)
-								->select(i | not i.oclIsUndefined()))
+								->select(i | not i.oclIsUndefined())
 								->select(e | e.differences.oclIsTypeOf(compareMM!ReferenceChange))
-								->exists(i | i.differences.first().reference.containment = true)
+								->exists(i | i.differences.first().reference.containment = true) or not m.differences ->collect(e | e.conflict)
+																										->select(i | not i.oclIsUndefined())
+																										->select(e | e.differences.first().oclIsTypeOf(compareMM!AttributeChange)).isEmpty())
 					endif
 		)
 	using {		
@@ -224,7 +226,7 @@ rule real_referenceChange2Member {
 			firstName <- rf.value.firstName,
 			age <- rf.value.age,
 
-			relatives <- if (not rf.value.relatives.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UFamiliesMM!"Families::Member"))->select(e | e.origin.firstName = rf.value.relatives.first().firstName) else OclUndefined endif			
+			relatives <- if (not rf.value.relatives.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UFamiliesMM!"Families::Member"))->select(e | e.origin.firstName = rf.value.relatives.firstName) else OclUndefined endif			
 		)
 }
 
@@ -322,44 +324,174 @@ rule rootMatch2FamilyRegistry {
 }
 
 
---************************************************************ NO PSEUDO CONFLICT ************************************************************--
+--************************************************************* PSEUDO CONFLICT TO UNCERTAIN **************************************************************--
+-- transform "PSEUDO conflicting Family" 2 uncertain Family
+rule PSEUDOconflictingFamily2uFamily {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().value.oclIsTypeOf(UFamiliesMM!"Families::Family")
+			and cf.kind = #PSEUDO
+			and cf.differences.first().kind = #ADD
+			and if (not cf.differences.first().requires.isEmpty()) then cf.differences.first().requires.first().conflict.kind = #REAL else true endif
+			and if (cf.differences.first().oclIsTypeOf(compareMM!ReferenceChange)) then cf.differences.first().reference.containment = true else true endif
+		)
+	to
+		conflicting_Family: UFamiliesMM!uFamily (
+			uleft  <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+-- transform "differences of PSEUDO conflicting Family" 2 left and right Family
 rule pseudo_referenceChange2Family {
 	from 
 		rf: compareMM!ReferenceChange (
-			rf.value.oclIsTypeOf(UFamiliesMM!"Families::Family") 
-			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif
+			rf.value.oclIsTypeOf(UFamiliesMM!"Families::Family")
 			and rf.kind = #ADD
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif 
+			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) then rf.requires.first().conflict.kind = #REAL else true endif
 			and rf.reference.containment = true
 		)
+	using {		
+			sons : compareMM!ReferenceChange = rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange)) ->select(e | e.reference.name = 'sons');
+			daughters : compareMM!ReferenceChange = rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange)) ->select(e | e.reference.name = 'daughters');
+			mother : compareMM!ReferenceChange = rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange)) ->select(e | e.reference.name = 'mother');
+			father : compareMM!ReferenceChange = rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange)) ->select(e | e.reference.name = 'father');
+	}
 	to
 		Family_ref: UFamiliesMM!"Families::Family" (
 			lastName <- rf.value.lastName,
 			address <- rf.value.address,
+
+			sons <- sons ->collect(e | e.conflict) ->collect(e | if (e.kind = #REAL) then thisModule.subREALConflictingMember2uMember(e) else thisModule.subPSEUDOConflictingMember2uMember(e) endif),
+			daughters <- daughters ->collect(e | e.conflict) ->collect(e | if (e.kind = #REAL) then thisModule.subREALConflictingMember2uMember(e) else thisModule.subPSEUDOConflictingMember2uMember(e) endif),
+			mother <- mother ->collect(e | e.conflict) ->collect(e | if (e.kind = #REAL) then thisModule.subREALConflictingMember2uMember(e) else thisModule.subPSEUDOConflictingMember2uMember(e) endif),
+			father <- father ->collect(e | e.conflict) ->collect(e | if (e.kind = #REAL) then thisModule.subREALConflictingMember2uMember(e) else thisModule.subPSEUDOConflictingMember2uMember(e) endif),
+			links <- (rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))  ->select(e | e.reference.name = 'links'))			
+		)
+}
+
+-- transform "conflicting Family" child of pseudo conflicting families 2 uncertain members (for REAL conflicts)
+lazy rule subREALConflictingFamily2uFamily {
+	from
+		cf: compareMM!Conflict 
+	to
+		um: UFamiliesMM!uFamily (
+			utype  <- #XOR,
+			uleft  <- (cf.differences ->select(e | e.source = #LEFT))  ->collect(e | thisModule.subPSEUDOreferenceChange2Family(e)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT)) ->collect(e | thisModule.subPSEUDOreferenceChange2Family(e))
+		)
+}
+-- transform "conflicting members" child of pseudo conflicting families 2 uncertain members (for PSEUDO conflicts)
+lazy rule subPSEUDOConflictingFamily2uFamily {
+	from
+		cf: compareMM!Conflict 
+	to
+		um: UFamiliesMM!uFamily (
+			utype  <- #OR,
+			uleft  <- (cf.differences ->select(e | e.source = #LEFT))  ->collect(e | thisModule.subPSEUDOreferenceChange2Family(e)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT)) ->collect(e | thisModule.subPSEUDOreferenceChange2Family(e))
+		)
+}
+
+lazy rule subPSEUDOreferenceChange2Family {
+	from 
+		rf: compareMM!ReferenceChange 
+	using {		
+
+
+
+
+			links_link : compareMM!ReferenceChange = compareMM!ReferenceChange.allInstances()->select(e | e.reference.name = 'links')->select(e | e.requires.includes(rf)).first();	}
+	to
+		m: UFamiliesMM!"Families::Family" (
+			lastName <- rf.value.lastName,
+			address <- rf.value.address,
+
 			sons <- (rf.requiredBy ->select(e | e.reference.name = 'sons')),
 			daughters <- (rf.requiredBy ->select(e | e.reference.name = 'daughters')),
 			mother <- (rf.requiredBy ->select(e | e.reference.name = 'mother')),
 			father <- (rf.requiredBy ->select(e | e.reference.name = 'father')),
-			links <- if (not rf.value.links.isEmpty()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | rf.value.links.includes(e.origin)) else OclUndefined endif			
+			links <- if (not links_link.oclIsUndefined()) then (links_link.requires->select(e | e.reference.eType = links_link.reference.eType)) else OclUndefined endif
 		)
 }
 
 
+-- transform "PSEUDO conflicting Member" 2 uncertain Member
+rule PSEUDOconflictingMember2uMember {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().value.oclIsTypeOf(UFamiliesMM!"Families::Member")
+			and cf.kind = #PSEUDO
+			and cf.differences.first().kind = #ADD
+			and if (not cf.differences.first().requires.isEmpty()) then cf.differences.first().requires.first().conflict.kind = #REAL else true endif
+			and if (cf.differences.first().oclIsTypeOf(compareMM!ReferenceChange)) then cf.differences.first().reference.containment = true else true endif
+		)
+	to
+		conflicting_Member: UFamiliesMM!uMember (
+			uleft  <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+-- transform "differences of PSEUDO conflicting Member" 2 left and right Member
 rule pseudo_referenceChange2Member {
 	from 
 		rf: compareMM!ReferenceChange (
-			rf.value.oclIsTypeOf(UFamiliesMM!"Families::Member") 
-			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif
+			rf.value.oclIsTypeOf(UFamiliesMM!"Families::Member")
 			and rf.kind = #ADD
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif 
+			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) then rf.requires.first().conflict.kind = #REAL else true endif
 			and rf.reference.containment = true
 		)
+	using {		
+	}
 	to
 		Member_ref: UFamiliesMM!"Families::Member" (
 			firstName <- rf.value.firstName,
 			age <- rf.value.age,
-			relatives <- if (not rf.value.relatives.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UFamiliesMM!"Families::Member"))->select(e | e.origin.firstName = rf.value.relatives.first().firstName) else OclUndefined endif			
+
+			relatives <- (rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))  ->select(e | e.reference.name = 'relatives'))			
+		)
+}
+
+-- transform "conflicting Member" child of pseudo conflicting families 2 uncertain members (for REAL conflicts)
+lazy rule subREALConflictingMember2uMember {
+	from
+		cf: compareMM!Conflict 
+	to
+		um: UFamiliesMM!uMember (
+			utype  <- #XOR,
+			uleft  <- (cf.differences ->select(e | e.source = #LEFT))  ->collect(e | thisModule.subPSEUDOreferenceChange2Member(e)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT)) ->collect(e | thisModule.subPSEUDOreferenceChange2Member(e))
+		)
+}
+-- transform "conflicting members" child of pseudo conflicting families 2 uncertain members (for PSEUDO conflicts)
+lazy rule subPSEUDOConflictingMember2uMember {
+	from
+		cf: compareMM!Conflict 
+	to
+		um: UFamiliesMM!uMember (
+			utype  <- #OR,
+			uleft  <- (cf.differences ->select(e | e.source = #LEFT))  ->collect(e | thisModule.subPSEUDOreferenceChange2Member(e)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT)) ->collect(e | thisModule.subPSEUDOreferenceChange2Member(e))
+		)
+}
+
+lazy rule subPSEUDOreferenceChange2Member {
+	from 
+		rf: compareMM!ReferenceChange 
+	using {		
+			relatives_link : compareMM!ReferenceChange = compareMM!ReferenceChange.allInstances()->select(e | e.reference.name = 'relatives')->select(e | e.requires.includes(rf)).first();	}
+	to
+		m: UFamiliesMM!"Families::Member" (
+			firstName <- rf.value.firstName,
+			age <- rf.value.age,
+
+			relatives <- if (not relatives_link.oclIsUndefined()) then (relatives_link.requires->select(e | e.reference.eType = relatives_link.reference.eType)) else OclUndefined endif
 		)
 }
 
 
 
---************************************************************ NO PSEUDO CONFLICT ************************************************************--
+--************************************************************* PSEUDO CONFLICT TO UNCERTAIN **************************************************************--
