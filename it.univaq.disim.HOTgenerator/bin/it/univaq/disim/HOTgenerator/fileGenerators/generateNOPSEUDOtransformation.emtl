@@ -4,10 +4,10 @@
     <input>
       <takesTypesFrom href="http://www.eclipse.org/emf/2002/Ecore#/"/>
     </input>
-    <imports href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/helpers/generateHelpers.emtl#/0"/>
-    <imports href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rootMatch/generateRootMatchRule.emtl#/0"/>
-    <imports href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rules/transformClasses01.emtl#/0"/>
-    <imports href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rules/transformClasses0N.emtl#/0"/>
+    <imports href="../helpers/generateHelpers.emtl#/0"/>
+    <imports href="../rootMatch/generateRootMatchRule.emtl#/0"/>
+    <imports href="../rules/transformClasses01.emtl#/0"/>
+    <imports href="../rules/transformClasses0N.emtl#/0"/>
     <imports href="../pseudoconflicts/generateNOPseudoConflictRules.emtl#/0"/>
     <ownedModuleElement xsi:type="mtl:Template" name="generateNOPSEUDOtransformation" visibility="Public">
       <init>
@@ -36,7 +36,7 @@
         <body xsi:type="mtl:ForBlock">
           <body xsi:type="mtl:TemplateInvocation">
             <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
-            <definition href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/helpers/generateHelpers.emtl#/0/generateHelpers"/>
+            <definition href="../helpers/generateHelpers.emtl#/0/generateHelpers"/>
             <argument xsi:type="ocl.ecore:VariableExp" name="model" referredVariable="/0/generateNOPSEUDOtransformation/model">
               <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EPackage"/>
             </argument>
@@ -65,7 +65,7 @@
           <body xsi:type="mtl:ForBlock">
             <body xsi:type="mtl:TemplateInvocation">
               <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
-              <definition href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/helpers/generateHelpers.emtl#/0/generateHelpers"/>
+              <definition href="../helpers/generateHelpers.emtl#/0/generateHelpers"/>
               <argument xsi:type="ocl.ecore:VariableExp" name="model" referredVariable="/0/generateNOPSEUDOtransformation/model">
                 <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EPackage"/>
               </argument>
@@ -106,7 +106,7 @@
           <body xsi:type="mtl:IfBlock">
             <body xsi:type="mtl:TemplateInvocation">
               <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
-              <definition href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rootMatch/generateRootMatchRule.emtl#/0/generate_rootMatchRule"/>
+              <definition href="../rootMatch/generateRootMatchRule.emtl#/0/generate_rootMatchRule"/>
               <argument xsi:type="ocl.ecore:VariableExp" name="model" referredVariable="/0/generateNOPSEUDOtransformation/model">
                 <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EPackage"/>
               </argument>
@@ -167,7 +167,7 @@
               <body xsi:type="mtl:IfBlock">
                 <body xsi:type="mtl:TemplateInvocation">
                   <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
-                  <definition href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rules/transformClasses0N.emtl#/0/generate_Rules_for_classes_with_multiplicity_0N"/>
+                  <definition href="../rules/transformClasses0N.emtl#/0/generate_Rules_for_classes_with_multiplicity_0N"/>
                   <argument xsi:type="ocl.ecore:VariableExp" name="model" referredVariable="/0/generateNOPSEUDOtransformation/model">
                     <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EPackage"/>
                   </argument>
@@ -254,7 +254,7 @@
                 <else>
                   <body xsi:type="mtl:TemplateInvocation">
                     <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
-                    <definition href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rules/transformClasses01.emtl#/0/generate_Rules_for_classes_with_multiplicity_01"/>
+                    <definition href="../rules/transformClasses01.emtl#/0/generate_Rules_for_classes_with_multiplicity_01"/>
                     <argument xsi:type="ocl.ecore:VariableExp" name="model" referredVariable="/0/generateNOPSEUDOtransformation/model">
                       <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EPackage"/>
                     </argument>
@@ -292,7 +292,7 @@
             <body xsi:type="mtl:IfBlock">
               <body xsi:type="mtl:TemplateInvocation">
                 <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
-                <definition href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rootMatch/generateRootMatchRule.emtl#/0/generate_rootMatchRule"/>
+                <definition href="../rootMatch/generateRootMatchRule.emtl#/0/generate_rootMatchRule"/>
                 <argument xsi:type="ocl.ecore:VariableExp" name="model" referredVariable="/0/generateNOPSEUDOtransformation/model">
                   <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EPackage"/>
                 </argument>
@@ -353,7 +353,7 @@
                 <body xsi:type="mtl:IfBlock">
                   <body xsi:type="mtl:TemplateInvocation">
                     <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
-                    <definition href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rules/transformClasses0N.emtl#/0/generate_Rules_for_classes_with_multiplicity_0N"/>
+                    <definition href="../rules/transformClasses0N.emtl#/0/generate_Rules_for_classes_with_multiplicity_0N"/>
                     <argument xsi:type="ocl.ecore:VariableExp" name="model" referredVariable="/0/generateNOPSEUDOtransformation/model">
                       <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EPackage"/>
                     </argument>
@@ -440,7 +440,7 @@
                   <else>
                     <body xsi:type="mtl:TemplateInvocation">
                       <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
-                      <definition href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rules/transformClasses01.emtl#/0/generate_Rules_for_classes_with_multiplicity_01"/>
+                      <definition href="../rules/transformClasses01.emtl#/0/generate_Rules_for_classes_with_multiplicity_01"/>
                       <argument xsi:type="ocl.ecore:VariableExp" name="model" referredVariable="/0/generateNOPSEUDOtransformation/model">
                         <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EPackage"/>
                       </argument>
@@ -663,7 +663,7 @@
           <contents xsi:type="ocl.ecore:Constraint"/>
         </eAnnotations>
         <eAnnotations source="MTL">
-          <references href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/helpers/generateHelpers.emtl#/0/generateHelpers"/>
+          <references href="../helpers/generateHelpers.emtl#/0/generateHelpers"/>
         </eAnnotations>
         <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
         <eParameters name="model">
@@ -681,7 +681,7 @@
           <contents xsi:type="ocl.ecore:Constraint"/>
         </eAnnotations>
         <eAnnotations source="MTL">
-          <references href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rootMatch/generateRootMatchRule.emtl#/0/generate_rootMatchRule"/>
+          <references href="../rootMatch/generateRootMatchRule.emtl#/0/generate_rootMatchRule"/>
         </eAnnotations>
         <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
         <eParameters name="model">
@@ -699,7 +699,7 @@
           <contents xsi:type="ocl.ecore:Constraint"/>
         </eAnnotations>
         <eAnnotations source="MTL">
-          <references href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rules/transformClasses01.emtl#/0/generate_Rules_for_classes_with_multiplicity_01"/>
+          <references href="../rules/transformClasses01.emtl#/0/generate_Rules_for_classes_with_multiplicity_01"/>
         </eAnnotations>
         <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
         <eParameters name="model">
@@ -717,7 +717,7 @@
           <contents xsi:type="ocl.ecore:Constraint"/>
         </eAnnotations>
         <eAnnotations source="MTL">
-          <references href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/rules/transformClasses0N.emtl#/0/generate_Rules_for_classes_with_multiplicity_0N"/>
+          <references href="../rules/transformClasses0N.emtl#/0/generate_Rules_for_classes_with_multiplicity_0N"/>
         </eAnnotations>
         <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
         <eParameters name="model">

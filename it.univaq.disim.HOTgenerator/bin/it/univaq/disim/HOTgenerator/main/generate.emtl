@@ -2,7 +2,7 @@
 <xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:mtl="http://www.eclipse.org/acceleo/mtl/3.0" xmlns:ocl.ecore="http://www.eclipse.org/ocl/1.1.0/Ecore">
   <mtl:Module name="generate" nsURI="it::univaq::disim::HOTgenerator::main::generate" startHeaderPosition="83" endHeaderPosition="438">
     <documentation xsi:type="mtl:ModuleDocumentation">
-      <body startPosition="32" endPosition="80" value="&#xA;The documentation of the module generate.&#xA;&#xA;"/>
+      <body startPosition="32" endPosition="80" value="&#xD;&#xA;The documentation of the module generate.&#xD;&#xA;&#xD;&#xA;"/>
     </documentation>
     <input>
       <takesTypesFrom href="http://www.eclipse.org/emf/compare#/"/>
@@ -11,7 +11,7 @@
       <takesTypesFrom href="http://www.eclipse.org/emf/2002/Ecore#/"/>
     </input>
     <imports href="../fileGenerators/generatePSEUDOtransformation.emtl#/0"/>
-    <imports href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/fileGenerators/generateNOPSEUDOtransformation.emtl#/0"/>
+    <imports href="../fileGenerators/generateNOPSEUDOtransformation.emtl#/0"/>
     <ownedModuleElement xsi:type="mtl:Template" name="generateElement" visibility="Public" main="true">
       <init>
         <variable name="modelName">
@@ -36,14 +36,14 @@
       <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#xA;"/>
       <body xsi:type="mtl:TemplateInvocation">
         <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
-        <definition href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/fileGenerators/generateNOPSEUDOtransformation.emtl#/0/generateNOPSEUDOtransformation"/>
+        <definition href="../fileGenerators/generateNOPSEUDOtransformation.emtl#/0/generateNOPSEUDOtransformation"/>
         <argument xsi:type="ocl.ecore:VariableExp" name="model" referredVariable="/0/generateElement/model">
           <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EPackage"/>
         </argument>
       </body>
       <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#xA;"/>
       <documentation xsi:type="mtl:ModuleElementDocumentation">
-        <body startPosition="360" endPosition="438" value="&#xA;The documentation of the template generateElement.&#xA;@param anEPackage&#xA;&#xA;"/>
+        <body startPosition="360" endPosition="438" value="&#xD;&#xA;The documentation of the template generateElement.&#xD;&#xA;@param anEPackage&#xD;&#xA;&#xD;&#xA;"/>
         <parametersDocumentation name="anEPackage">
           <body value=""/>
         </parametersDocumentation>
@@ -113,7 +113,7 @@
           <contents xsi:type="ocl.ecore:Constraint"/>
         </eAnnotations>
         <eAnnotations source="MTL">
-          <references href="platform:/resource/it.univaq.disim.HOTgenerator/bin/it/univaq/disim/HOTgenerator/fileGenerators/generateNOPSEUDOtransformation.emtl#/0/generateNOPSEUDOtransformation"/>
+          <references href="../fileGenerators/generateNOPSEUDOtransformation.emtl#/0/generateNOPSEUDOtransformation"/>
         </eAnnotations>
         <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
         <eParameters name="model">
