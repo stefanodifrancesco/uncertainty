@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/it.univaq.disim.uncertainty.filesystem/src" modelPluginID="it.univaq.disim.uncertainty.filesystem"
+    modelName="UFilesystem" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>UFilesystem.ecore</foreignModel>
+  <genPackages prefix="Filesystem" disposableProviderFactory="true" ecorePackage="UFilesystem.ecore#/">
+    <genClasses ecoreClass="UFilesystem.ecore#//Filesystem">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//Filesystem/drives"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//Filesystem/syncs"/>
+    </genClasses>
+    <genClasses ecoreClass="UFilesystem.ecore#//Drive"/>
+    <genClasses ecoreClass="UFilesystem.ecore#//Folder">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//Folder/contents"/>
+    </genClasses>
+    <genClasses ecoreClass="UFilesystem.ecore#//Shortcut">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//Shortcut/target"/>
+    </genClasses>
+    <genClasses ecoreClass="UFilesystem.ecore#//Sync">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//Sync/source"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//Sync/target"/>
+    </genClasses>
+    <genClasses ecoreClass="UFilesystem.ecore#//File">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute UFilesystem.ecore#//File/name"/>
+    </genClasses>
+    <nestedGenPackages prefix="Filesystem_uncertainty" disposableProviderFactory="true"
+        ecorePackage="UFilesystem.ecore#//filesystem_uncertainty">
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/aFilesystem"/>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/uFilesystem">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uFilesystem/uleft"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uFilesystem/uright"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uFilesystem/upoint"/>
+      </genClasses>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/aFile"/>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/uFile">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uFile/uleft"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uFile/uright"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uFile/upoint"/>
+      </genClasses>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/aSync"/>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/uSync">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uSync/uleft"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uSync/uright"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uSync/upoint"/>
+      </genClasses>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/aShortcut"/>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/uShortcut">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uShortcut/uleft"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uShortcut/uright"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uShortcut/upoint"/>
+      </genClasses>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/aFolder"/>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/aDrive"/>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/uFolder">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uFolder/uleft"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uFolder/uright"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uFolder/upoint"/>
+      </genClasses>
+      <genClasses ecoreClass="UFilesystem.ecore#//filesystem_uncertainty/uDrive">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uDrive/uleft"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uDrive/uright"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference UFilesystem.ecore#//filesystem_uncertainty/uDrive/upoint"/>
+      </genClasses>
+    </nestedGenPackages>
+  </genPackages>
+</genmodel:GenModel>

@@ -9,7 +9,9 @@ rule PSEUDOconflicting[el.name/]2u[el.name/] {
 			cf.differences.first().value.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if])
 			and cf.kind = #PSEUDO
 			and cf.differences.first().kind = #ADD
-			and if (not cf.differences.first().requires.isEmpty()) then cf.differences.first().requires.first().conflict.kind = #REAL else true endif
+			and if (not cf.differences.first().requires.isEmpty()) 
+					then if (not cf.differences.first().requires.first().conflict.oclIsUndefined())
+						then cf.differences.first().requires.first().conflict.kind = #REAL else true endif else true endif
 			and if (cf.differences.first().oclIsTypeOf(compareMM!ReferenceChange)) then cf.differences.first().reference.containment = true else true endif
 		)
 	to
@@ -26,7 +28,9 @@ rule pseudo_referenceChange2[el.name/] {
 			rf.value.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if])
 			and rf.kind = #ADD
 			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif 
-			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) then rf.requires.first().conflict.kind = #REAL else true endif
+			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) 
+					then if (not rf.requires.first().conflict.oclIsUndefined())
+						then rf.requires.first().conflict.kind = #REAL else true endif else true endif
 			and rf.reference.containment = true
 		)
 	using {		

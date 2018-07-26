@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated UFilesystem -->
+      <package
+            uri="http://it.univaq.disim/uncertainty.filesystem"
+            class="filesystem.FilesystemPackage"
+            genModel="metamodel/UFilesystem.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated UFilesystem -->
+      <package
+            uri="filesystem_uncertainty"
+            class="filesystem.filesystem_uncertainty.Filesystem_uncertaintyPackage"
+            genModel="metamodel/UFilesystem.genmodel"/>
+   </extension>
+
+</plugin>

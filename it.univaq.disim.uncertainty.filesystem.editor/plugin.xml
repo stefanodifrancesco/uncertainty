@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.ui.newWizards">
+      <!-- @generated UFilesystem -->
+      <category
+            id="org.eclipse.emf.ecore.Wizard.category.ID"
+            name="%_UI_Wizard_category"/>
+      <wizard
+            id="filesystem.presentation.FilesystemModelWizardID"
+            name="%_UI_FilesystemModelWizard_label"
+            class="filesystem.presentation.FilesystemModelWizard"
+            category="org.eclipse.emf.ecore.Wizard.category.ID"
+            icon="icons/full/obj16/FilesystemModelFile.gif">
+         <description>%_UI_FilesystemModelWizard_description</description>
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+   </extension>
+
+   <extension point="org.eclipse.ui.editors">
+      <!-- @generated UFilesystem -->
+      <editor
+            id="filesystem.presentation.FilesystemEditorID"
+            name="%_UI_FilesystemEditor_label"
+            icon="icons/full/obj16/FilesystemModelFile.gif"
+            extensions="filesystem"
+            class="filesystem.presentation.FilesystemEditor"
+            contributorClass="filesystem.presentation.FilesystemActionBarContributor">
+      </editor>
+   </extension>
+
+   <extension point="org.eclipse.ui.newWizards">
+      <!-- @generated UFilesystem -->
+      <category
+            id="org.eclipse.emf.ecore.Wizard.category.ID"
+            name="%_UI_Wizard_category"/>
+      <wizard
+            id="filesystem.filesystem_uncertainty.presentation.Filesystem_uncertaintyModelWizardID"
+            name="%_UI_Filesystem_uncertaintyModelWizard_label"
+            class="filesystem.filesystem_uncertainty.presentation.Filesystem_uncertaintyModelWizard"
+            category="org.eclipse.emf.ecore.Wizard.category.ID"
+            icon="icons/full/obj16/Filesystem_uncertaintyModelFile.gif">
+         <description>%_UI_Filesystem_uncertaintyModelWizard_description</description>
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+   </extension>
+
+   <extension point="org.eclipse.ui.editors">
+      <!-- @generated UFilesystem -->
+      <editor
+            id="filesystem.filesystem_uncertainty.presentation.Filesystem_uncertaintyEditorID"
+            name="%_UI_Filesystem_uncertaintyEditor_label"
+            icon="icons/full/obj16/Filesystem_uncertaintyModelFile.gif"
+            extensions="filesystem_uncertainty"
+            class="filesystem.filesystem_uncertainty.presentation.Filesystem_uncertaintyEditor"
+            contributorClass="filesystem.filesystem_uncertainty.presentation.Filesystem_uncertaintyActionBarContributor">
+      </editor>
+   </extension>
+
+</plugin>

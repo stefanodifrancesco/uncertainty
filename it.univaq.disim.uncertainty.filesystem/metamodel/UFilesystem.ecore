@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="filesystem" nsURI="http://it.univaq.disim/uncertainty.filesystem"
+    nsPrefix="filesystem">
+  <eAnnotations source="gmf"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Filesystem" eSuperTypes="#//filesystem_uncertainty/aFilesystem">
+    <eAnnotations source="gmf.diagram"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="drives" upperBound="-1"
+        eType="#//filesystem_uncertainty/aDrive" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="syncs" upperBound="-1"
+        eType="#//filesystem_uncertainty/aSync" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Drive" eSuperTypes="#//Folder #//filesystem_uncertainty/aDrive"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Folder" eSuperTypes="#//File #//filesystem_uncertainty/aFolder">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="contents" upperBound="-1"
+        eType="#//filesystem_uncertainty/aFile" containment="true">
+      <eAnnotations source="gmf.compartment"/>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Shortcut" eSuperTypes="#//File #//filesystem_uncertainty/aShortcut">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//File">
+      <eAnnotations source="gmf.link">
+        <details key="target.decoration" value="arrow"/>
+        <details key="style" value="dash"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Sync" eSuperTypes="#//filesystem_uncertainty/aSync">
+    <eAnnotations source="gmf.link">
+      <details key="source" value="source"/>
+      <details key="target" value="target"/>
+      <details key="style" value="dot"/>
+      <details key="width" value="2"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//File"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//File"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="File" eSuperTypes="#//filesystem_uncertainty/aFile">
+    <eAnnotations source="gmf.node">
+      <details key="label" value="name"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eSubpackages name="filesystem_uncertainty" nsURI="filesystem_uncertainty" nsPrefix="filesystem_uncertainty">
+    <eClassifiers xsi:type="ecore:EClass" name="aFilesystem"/>
+    <eClassifiers xsi:type="ecore:EClass" name="uFilesystem" eSuperTypes="#//filesystem_uncertainty/aFilesystem">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uleft" upperBound="-1"
+          eType="#//Filesystem" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uright" upperBound="-1"
+          eType="#//Filesystem" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="upoint" upperBound="-1"
+          eType="#//filesystem_uncertainty/uFilesystem" containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="aFile"/>
+    <eClassifiers xsi:type="ecore:EClass" name="uFile" eSuperTypes="#//filesystem_uncertainty/aFile">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uleft" upperBound="-1"
+          eType="#//File" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uright" upperBound="-1"
+          eType="#//File" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="upoint" upperBound="-1"
+          eType="#//filesystem_uncertainty/uFile" containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="aSync"/>
+    <eClassifiers xsi:type="ecore:EClass" name="uSync" eSuperTypes="#//filesystem_uncertainty/aSync">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uleft" upperBound="-1"
+          eType="#//Sync" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uright" upperBound="-1"
+          eType="#//Sync" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="upoint" upperBound="-1"
+          eType="#//filesystem_uncertainty/uSync" containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="aShortcut"/>
+    <eClassifiers xsi:type="ecore:EClass" name="uShortcut" eSuperTypes="#//filesystem_uncertainty/aShortcut">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uleft" upperBound="-1"
+          eType="#//Shortcut" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uright" upperBound="-1"
+          eType="#//Shortcut" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="upoint" upperBound="-1"
+          eType="#//filesystem_uncertainty/uShortcut" containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="aFolder"/>
+    <eClassifiers xsi:type="ecore:EClass" name="aDrive"/>
+    <eClassifiers xsi:type="ecore:EClass" name="uFolder" eSuperTypes="#//filesystem_uncertainty/aFolder">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uleft" upperBound="-1"
+          eType="#//Folder" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uright" upperBound="-1"
+          eType="#//Folder" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="upoint" upperBound="-1"
+          eType="#//filesystem_uncertainty/uFolder" containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="uDrive" eSuperTypes="#//filesystem_uncertainty/aDrive">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uleft" upperBound="-1"
+          eType="#//Drive" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="uright" upperBound="-1"
+          eType="#//Drive" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="upoint" upperBound="-1"
+          eType="#//filesystem_uncertainty/uDrive"/>
+    </eClassifiers>
+  </eSubpackages>
+</ecore:EPackage>

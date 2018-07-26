@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<filesystem:Filesystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:filesystem="http://it.univaq.disim/uncertainty.filesystem" xmlns:filesystem_uncertainty="filesystem_uncertainty">
+  <drives xsi:type="filesystem:Drive" name="C">
+    <contents xsi:type="filesystem:Folder" name="Documents">
+      <contents xsi:type="filesystem_uncertainty:uFile">
+        <uleft name="esempio2"/>
+        <uright name="esempio3"/>
+      </contents>
+    </contents>
+  </drives>
+  <drives xsi:type="filesystem:Drive" name="D">
+    <contents xsi:type="filesystem:File" name="example"/>
+  </drives>
+  <drives xsi:type="filesystem:Drive" name="E">
+    <contents xsi:type="filesystem:Folder" name="run"/>
+  </drives>
+  <drives xsi:type="filesystem_uncertainty:uDrive">
+    <uleft name="H"/>
+    <uright name="H"/>
+  </drives>
+  <syncs xsi:type="filesystem_uncertainty:uSync">
+    <uleft/>
+    <uright/>
+  </syncs>
+</filesystem:Filesystem>

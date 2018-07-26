@@ -25,20 +25,20 @@ rule rootMatch2[el.name/] {
 			[/for]
 
 			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = true)]
-			[ref.name/]_ref_changes : compareMM!ReferenceChange = reference_changes ->select(e | e.reference.name = '[ref.name/]');[/if]
-			[/for]
+			[ref.name/]_ref_changes : compareMM!ReferenceChange = reference_changes ->select(e | e.reference.name = '[ref.name/]');
+			[/if][/for]
 
 			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = false)]
-			[ref.name/]_ref_changes : compareMM!ReferenceChange = noContainmentReferences ->select(e | e.reference.name = '[ref.name/]');[/if]
-			[/for]
+			[ref.name/]_ref_changes : compareMM!ReferenceChange = noContainmentReferences ->select(e | e.reference.name = '[ref.name/]');
+			[/if][/for]
 			
 			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = true)]
 			[ref.name/]_attr_conflict : compareMM!Conflict = ([ref.name/]_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
 			[/if][/for]
 			
 			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = true)]
-			conflicting_[ref.name/] : compareMM!Conflict = (reference_changes ->select(e | e.reference.name = '[ref.name/]')) ->collect(e | e.conflict);[/if]
-			[/for]
+			conflicting_[ref.name/] : compareMM!Conflict = (reference_changes ->select(e | e.reference.name = '[ref.name/]')) ->collect(e | e.conflict);
+			[/if][/for]
 	}
 	to
 		f: [if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if] (

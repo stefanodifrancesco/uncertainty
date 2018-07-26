@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="ASCII"?>
+<compare:Comparison xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:compare="http://www.eclipse.org/emf/compare" threeWay="true">
+  <matchedResources leftURI="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi"/>
+  <matchedResources rightURI="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_R.xmi"/>
+  <matchedResources originURI="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_O.xmi"/>
+  <matches>
+    <submatches>
+      <submatches>
+        <left href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#//@drives.1/@contents.0"/>
+      </submatches>
+      <differences xsi:type="compare:ReferenceChange" requires="//@matches.0/@differences.0">
+        <reference href="http://it.univaq.disim/uncertainty.filesystem#//Folder/contents"/>
+        <value href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#//@drives.1/@contents.0"/>
+      </differences>
+      <left href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#//@drives.1"/>
+    </submatches>
+    <submatches>
+      <submatches>
+        <submatches>
+          <left href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#//@drives.0/@contents.0/@contents.0"/>
+        </submatches>
+        <differences xsi:type="compare:ReferenceChange" requires="//@matches.0/@submatches.1/@differences.0">
+          <reference href="http://it.univaq.disim/uncertainty.filesystem#//Folder/contents"/>
+          <value href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#//@drives.0/@contents.0/@contents.0"/>
+        </differences>
+        <left href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#//@drives.0/@contents.0"/>
+      </submatches>
+      <submatches>
+        <submatches>
+          <right href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_R.xmi#//@drives.0/@contents.1/@contents.0"/>
+          <origin href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_O.xmi#//@drives.0/@contents.0/@contents.0"/>
+        </submatches>
+        <differences xsi:type="compare:ReferenceChange" requiredBy="//@matches.0/@submatches.1/@differences.2" kind="DELETE">
+          <reference href="http://it.univaq.disim/uncertainty.filesystem#//Folder/contents"/>
+          <value href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_O.xmi#//@drives.0/@contents.0/@contents.0"/>
+        </differences>
+        <right href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_R.xmi#//@drives.0/@contents.1"/>
+        <origin href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_O.xmi#//@drives.0/@contents.0"/>
+      </submatches>
+      <submatches>
+        <submatches>
+          <right href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_R.xmi#//@drives.0/@contents.0/@contents.0"/>
+        </submatches>
+        <differences xsi:type="compare:ReferenceChange" requires="//@matches.0/@submatches.1/@differences.1" source="RIGHT">
+          <reference href="http://it.univaq.disim/uncertainty.filesystem#//Folder/contents"/>
+          <value href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_R.xmi#//@drives.0/@contents.0/@contents.0"/>
+        </differences>
+        <right href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_R.xmi#//@drives.0/@contents.0"/>
+      </submatches>
+      <differences xsi:type="compare:ReferenceChange" requiredBy="//@matches.0/@submatches.1/@submatches.0/@differences.0">
+        <reference href="http://it.univaq.disim/uncertainty.filesystem#//Folder/contents"/>
+        <value href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#//@drives.0/@contents.0"/>
+      </differences>
+      <differences xsi:type="compare:ReferenceChange" requiredBy="//@matches.0/@submatches.1/@submatches.2/@differences.0" source="RIGHT">
+        <reference href="http://it.univaq.disim/uncertainty.filesystem#//Folder/contents"/>
+        <value href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_R.xmi#//@drives.0/@contents.0"/>
+      </differences>
+      <differences xsi:type="compare:ReferenceChange" requires="//@matches.0/@submatches.1/@submatches.1/@differences.0" kind="DELETE">
+        <reference href="http://it.univaq.disim/uncertainty.filesystem#//Folder/contents"/>
+        <value href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_O.xmi#//@drives.0/@contents.0"/>
+      </differences>
+      <left href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#//@drives.0"/>
+      <right href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_R.xmi#//@drives.0"/>
+      <origin href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_O.xmi#//@drives.0"/>
+    </submatches>
+    <differences xsi:type="compare:ReferenceChange" requiredBy="//@matches.0/@submatches.0/@differences.0">
+      <reference href="http://it.univaq.disim/uncertainty.filesystem#//Filesystem/drives"/>
+      <value href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#//@drives.1"/>
+    </differences>
+    <left href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_L.xmi#/"/>
+    <right href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_R.xmi#/"/>
+    <origin href="platform:/resource/it.univaq.disim.UseCases/filesystem/three-way_4/Filesystem_4_O.xmi#/"/>
+  </matches>
+</compare:Comparison>

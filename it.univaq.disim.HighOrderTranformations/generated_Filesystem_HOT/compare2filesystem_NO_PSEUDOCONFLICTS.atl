@@ -1,0 +1,775 @@
+-- @nsURI compareMM=http://www.eclipse.org/emf/compare
+
+module compare2Ufilesystem;
+create OUT : UfilesystemMM from IN : compareMM;
+
+
+
+
+
+
+helper def : getDrive_name (DriveMatch : compareMM!Match, attributes_changes : Sequence(compareMM!AttributeChange)) : String =
+	if ( not (attributes_changes ->select(e | e.attribute.name = 'name')).isEmpty() )
+						then if ( (attributes_changes ->select(e | e.attribute.name = 'name')).first().source = #LEFT )
+								then DriveMatch.left.name
+								else DriveMatch.right.name
+								endif
+						else DriveMatch.origin.name endif;
+
+
+
+helper def : getFolder_name (FolderMatch : compareMM!Match, attributes_changes : Sequence(compareMM!AttributeChange)) : String =
+	if ( not (attributes_changes ->select(e | e.attribute.name = 'name')).isEmpty() )
+						then if ( (attributes_changes ->select(e | e.attribute.name = 'name')).first().source = #LEFT )
+								then FolderMatch.left.name
+								else FolderMatch.right.name
+								endif
+						else FolderMatch.origin.name endif;
+
+
+
+helper def : getShortcut_name (ShortcutMatch : compareMM!Match, attributes_changes : Sequence(compareMM!AttributeChange)) : String =
+	if ( not (attributes_changes ->select(e | e.attribute.name = 'name')).isEmpty() )
+						then if ( (attributes_changes ->select(e | e.attribute.name = 'name')).first().source = #LEFT )
+								then ShortcutMatch.left.name
+								else ShortcutMatch.right.name
+								endif
+						else ShortcutMatch.origin.name endif;
+
+
+
+
+
+
+
+
+helper def : getFile_name (FileMatch : compareMM!Match, attributes_changes : Sequence(compareMM!AttributeChange)) : String =
+	if ( not (attributes_changes ->select(e | e.attribute.name = 'name')).isEmpty() )
+						then if ( (attributes_changes ->select(e | e.attribute.name = 'name')).first().source = #LEFT )
+								then FileMatch.left.name
+								else FileMatch.right.name
+								endif
+						else FileMatch.origin.name endif;
+
+
+
+
+
+rule rootMatch2Filesystem {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Filesystem")
+		)
+	using {		
+			attributes_changes   : compareMM!AttributeChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!AttributeChange));
+			reference_changes    : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange));
+			noContainmentReferences : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))->select(e | e.reference.containment = false);
+
+
+			drives_submatch : compareMM!Match = m.submatches  ->select(e | m.origin.drives.includes(e.origin));
+			syncs_submatch : compareMM!Match = m.submatches  ->select(e | m.origin.syncs.includes(e.origin));
+
+			drives_ref_changes : compareMM!ReferenceChange = reference_changes ->select(e | e.reference.name = 'drives');
+			syncs_ref_changes : compareMM!ReferenceChange = reference_changes ->select(e | e.reference.name = 'syncs');
+
+			
+			drives_attr_conflict : compareMM!Conflict = (drives_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
+			syncs_attr_conflict : compareMM!Conflict = (syncs_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
+			
+			conflicting_drives : compareMM!Conflict = (reference_changes ->select(e | e.reference.name = 'drives')) ->collect(e | e.conflict);
+			conflicting_syncs : compareMM!Conflict = (reference_changes ->select(e | e.reference.name = 'syncs')) ->collect(e | e.conflict);
+	}
+	to
+		f: UfilesystemMM!"filesystem::Filesystem" (
+			drives <- drives_submatch.append(drives_ref_changes).append(drives_attr_conflict).append(conflicting_drives),
+			syncs <- syncs_submatch.append(syncs_ref_changes).append(syncs_attr_conflict).append(conflicting_syncs)			
+		)
+}
+
+
+rule Drive_Match2Drive {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Drive")
+			and m.differences.isEmpty()
+		)
+	using {
+			contents_submatch : compareMM!Match = m.submatches  ->select(e | m.origin.contents.includes(e.origin));
+
+			contents_attr_conflict : compareMM!Conflict = (contents_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
+	}
+	to
+		conservative_Drive: UfilesystemMM!"filesystem::Drive" (
+			name <- m.origin.name,
+
+			contents <- contents_submatch.append(contents_attr_conflict)
+		)
+}
+
+rule Drive_Match2Drive_without_subconflicts {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Drive")
+			and not m.differences.isEmpty()
+			and if (m.differences ->collect(e | e.conflict)->select(i | not i.oclIsUndefined()).isEmpty()) -- no sub-conflicts on containment relations and on attribute changes
+					then true 
+					else not (m.differences ->collect(e | e.conflict)
+								->select(i | not i.oclIsUndefined())
+								->select(e | e.differences.oclIsTypeOf(compareMM!ReferenceChange))
+								->exists(i | i.differences.first().reference.containment = true) or not m.differences ->collect(e | e.conflict)
+																										->select(i | not i.oclIsUndefined())
+																										->select(e | e.differences.first().oclIsTypeOf(compareMM!AttributeChange)).isEmpty())
+					endif
+		)
+	using {		
+			attributes_changes   : compareMM!AttributeChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!AttributeChange));
+			reference_changes    : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange));
+			noContainmentReferences : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))->select(e | e.reference.containment = false);
+
+
+			contents_submatch : compareMM!Match = m.submatches  ->select(e | m.origin.contents.includes(e.origin));
+
+			contents_ref_changes : compareMM!ReferenceChange = reference_changes ->select(e | e.reference.name = 'contents');
+			
+			contents_attr_conflict : compareMM!Conflict = (contents_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
+			
+			conflicting_contents : compareMM!Conflict = (reference_changes ->select(e | e.reference.name = 'contents')) ->collect(e | e.conflict);
+	}
+	to
+		conservative_Drive: UfilesystemMM!"filesystem::Drive" (
+			name <- thisModule.getDrive_name(m, attributes_changes),
+
+			contents <- contents_submatch.append(contents_ref_changes).append(contents_attr_conflict).append(conflicting_contents)
+		)
+}
+
+rule real_referenceChange2Drive {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Drive") 
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #REAL else false endif
+			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) 
+					then if (not rf.requires.first().conflict.oclIsUndefined())
+						then rf.requires.first().conflict.kind = #REAL else true endif else true endif
+		)
+	to
+		Drive_ref: UfilesystemMM!"filesystem::Drive" (
+			name <- rf.value.name,
+
+			contents <- (rf.requiredBy ->select(e | e.reference.name = 'contents'))			
+		)
+}
+
+rule referenceChange2Drive {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Drive") 
+			and rf.conflict.oclIsUndefined() and rf.equivalence.oclIsUndefined() and rf.reference.containment = true and rf.kind = #ADD
+		)
+	using {		
+	}
+	to
+		Drive_ref: UfilesystemMM!"filesystem::Drive" (
+			name <- rf.value.name,
+
+			contents <- (rf.requiredBy ->select(e | e.reference.name = 'contents'))
+		)
+}
+
+rule conflictingDrive2uDrive {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().value.oclIsTypeOf(UfilesystemMM!Drive) 
+			and cf.kind = #REAL
+			and if (not cf.differences.first().requires.isEmpty()) 
+					then if (not cf.differences.first().requires.first().conflict.oclIsUndefined())
+						then cf.differences.first().requires.first().conflict.kind = #REAL else true endif else true endif
+		)
+	to
+		conflicting_Drive: UfilesystemMM!uDrive (
+			uleft <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+rule conflictingAttributes2uDrive {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().oclIsTypeOf(compareMM!AttributeChange) 
+			and cf.kind = #REAL
+			and if (not cf.differences.first().refImmediateComposite().left.oclIsUndefined())
+				then cf.differences.first().refImmediateComposite().left.oclIsTypeOf(UfilesystemMM!"filesystem::Drive")
+				else cf.differences.first().refImmediateComposite().right.oclIsTypeOf(UfilesystemMM!"filesystem::Drive")
+				endif
+		)
+	to
+		Drive_attr_conflict: UfilesystemMM!uDrive (
+			uleft <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+rule attributeChange2uDrive {
+	from 
+		ac: compareMM!AttributeChange ( 
+				not ac.conflict.oclIsUndefined() 
+				and (if (ac.source = #LEFT) 
+						then ac.refImmediateComposite().left.oclIsTypeOf(UfilesystemMM!"filesystem::Drive") 
+						else ac.refImmediateComposite().right.oclIsTypeOf(UfilesystemMM!"filesystem::Drive") 
+						endif) 
+		)
+	to
+		m: UfilesystemMM!"filesystem::Drive" (
+			name <- if (ac.source = #LEFT) then ac.refImmediateComposite().left.name else ac.refImmediateComposite().right.name endif
+		)
+}
+
+
+
+rule Folder_Match2Folder {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Folder")
+			and m.differences.isEmpty()
+		)
+	using {
+			contents_submatch : compareMM!Match = m.submatches  ->select(e | m.origin.contents.includes(e.origin));
+
+			contents_attr_conflict : compareMM!Conflict = (contents_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
+	}
+	to
+		conservative_Folder: UfilesystemMM!"filesystem::Folder" (
+			name <- m.origin.name,
+
+			contents <- contents_submatch.append(contents_attr_conflict)
+		)
+}
+
+rule Folder_Match2Folder_without_subconflicts {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Folder")
+			and not m.differences.isEmpty()
+			and if (m.differences ->collect(e | e.conflict)->select(i | not i.oclIsUndefined()).isEmpty()) -- no sub-conflicts on containment relations and on attribute changes
+					then true 
+					else not (m.differences ->collect(e | e.conflict)
+								->select(i | not i.oclIsUndefined())
+								->select(e | e.differences.oclIsTypeOf(compareMM!ReferenceChange))
+								->exists(i | i.differences.first().reference.containment = true) or not m.differences ->collect(e | e.conflict)
+																										->select(i | not i.oclIsUndefined())
+																										->select(e | e.differences.first().oclIsTypeOf(compareMM!AttributeChange)).isEmpty())
+					endif
+		)
+	using {		
+			attributes_changes   : compareMM!AttributeChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!AttributeChange));
+			reference_changes    : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange));
+			noContainmentReferences : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))->select(e | e.reference.containment = false);
+
+
+			contents_submatch : compareMM!Match = m.submatches  ->select(e | m.origin.contents.includes(e.origin));
+
+			contents_ref_changes : compareMM!ReferenceChange = reference_changes ->select(e | e.reference.name = 'contents');
+			
+			contents_attr_conflict : compareMM!Conflict = (contents_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
+			
+			conflicting_contents : compareMM!Conflict = (reference_changes ->select(e | e.reference.name = 'contents')) ->collect(e | e.conflict);
+	}
+	to
+		conservative_Folder: UfilesystemMM!"filesystem::Folder" (
+			name <- thisModule.getFolder_name(m, attributes_changes),
+
+			contents <- contents_submatch.append(contents_ref_changes).append(contents_attr_conflict).append(conflicting_contents)
+		)
+}
+
+rule real_referenceChange2Folder {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Folder") 
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #REAL else false endif
+			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) 
+					then if (not rf.requires.first().conflict.oclIsUndefined())
+						then rf.requires.first().conflict.kind = #REAL else true endif else true endif
+		)
+	to
+		Folder_ref: UfilesystemMM!"filesystem::Folder" (
+			name <- rf.value.name,
+
+			contents <- (rf.requiredBy ->select(e | e.reference.name = 'contents'))			
+		)
+}
+
+rule referenceChange2Folder {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Folder") 
+			and rf.conflict.oclIsUndefined() and rf.equivalence.oclIsUndefined() and rf.reference.containment = true and rf.kind = #ADD
+		)
+	using {		
+	}
+	to
+		Folder_ref: UfilesystemMM!"filesystem::Folder" (
+			name <- rf.value.name,
+
+			contents <- (rf.requiredBy ->select(e | e.reference.name = 'contents'))
+		)
+}
+
+rule conflictingFolder2uFolder {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().value.oclIsTypeOf(UfilesystemMM!Folder) 
+			and cf.kind = #REAL
+			and if (not cf.differences.first().requires.isEmpty()) 
+					then if (not cf.differences.first().requires.first().conflict.oclIsUndefined())
+						then cf.differences.first().requires.first().conflict.kind = #REAL else true endif else true endif
+		)
+	to
+		conflicting_Folder: UfilesystemMM!uFolder (
+			uleft <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+rule conflictingAttributes2uFolder {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().oclIsTypeOf(compareMM!AttributeChange) 
+			and cf.kind = #REAL
+			and if (not cf.differences.first().refImmediateComposite().left.oclIsUndefined())
+				then cf.differences.first().refImmediateComposite().left.oclIsTypeOf(UfilesystemMM!"filesystem::Folder")
+				else cf.differences.first().refImmediateComposite().right.oclIsTypeOf(UfilesystemMM!"filesystem::Folder")
+				endif
+		)
+	to
+		Folder_attr_conflict: UfilesystemMM!uFolder (
+			uleft <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+rule attributeChange2uFolder {
+	from 
+		ac: compareMM!AttributeChange ( 
+				not ac.conflict.oclIsUndefined() 
+				and (if (ac.source = #LEFT) 
+						then ac.refImmediateComposite().left.oclIsTypeOf(UfilesystemMM!"filesystem::Folder") 
+						else ac.refImmediateComposite().right.oclIsTypeOf(UfilesystemMM!"filesystem::Folder") 
+						endif) 
+		)
+	to
+		m: UfilesystemMM!"filesystem::Folder" (
+			name <- if (ac.source = #LEFT) then ac.refImmediateComposite().left.name else ac.refImmediateComposite().right.name endif
+		)
+}
+
+
+
+rule Shortcut_Match2Shortcut {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut")
+			and m.differences.isEmpty()
+		)
+	using {
+
+	}
+	to
+		conservative_Shortcut: UfilesystemMM!"filesystem::Shortcut" (
+			name <- m.origin.name,
+
+			target <- if (not m.origin.target.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut"))->select(e | e.origin.name = m.origin.target.name) else OclUndefined endif
+		)
+}
+
+rule Shortcut_Match2Shortcut_without_subconflicts {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut")
+			and not m.differences.isEmpty()
+			and if (m.differences ->collect(e | e.conflict)->select(i | not i.oclIsUndefined()).isEmpty()) -- no sub-conflicts on containment relations and on attribute changes
+					then true 
+					else not (m.differences ->collect(e | e.conflict)
+								->select(i | not i.oclIsUndefined())
+								->select(e | e.differences.oclIsTypeOf(compareMM!ReferenceChange))
+								->exists(i | i.differences.first().reference.containment = true) or not m.differences ->collect(e | e.conflict)
+																										->select(i | not i.oclIsUndefined())
+																										->select(e | e.differences.first().oclIsTypeOf(compareMM!AttributeChange)).isEmpty())
+					endif
+		)
+	using {		
+			attributes_changes   : compareMM!AttributeChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!AttributeChange));
+			reference_changes    : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange));
+			noContainmentReferences : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))->select(e | e.reference.containment = false);
+
+
+
+
+			target_ref_changes : compareMM!ReferenceChange = noContainmentReferences ->select(e | e.reference.name = 'target');			
+			
+	}
+	to
+		conservative_Shortcut: UfilesystemMM!"filesystem::Shortcut" (
+			name <- thisModule.getShortcut_name(m, attributes_changes),
+
+			target <- if (not m.origin.target.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut"))->select(e | e.origin.name = m.origin.target.name) else OclUndefined endif
+		)
+}
+
+rule real_referenceChange2Shortcut {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut") 
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #REAL else false endif
+			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) 
+					then if (not rf.requires.first().conflict.oclIsUndefined())
+						then rf.requires.first().conflict.kind = #REAL else true endif else true endif
+		)
+	to
+		Shortcut_ref: UfilesystemMM!"filesystem::Shortcut" (
+			name <- rf.value.name,
+
+			target <- if (not rf.value.target.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut"))->select(e | e.origin.name = rf.value.target.name) else OclUndefined endif			
+		)
+}
+
+rule referenceChange2Shortcut {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut") 
+			and rf.conflict.oclIsUndefined() and rf.equivalence.oclIsUndefined() and rf.reference.containment = true and rf.kind = #ADD
+		)
+	using {		
+			target_link : compareMM!ReferenceChange = compareMM!ReferenceChange.allInstances()->select(e | e.reference.name = 'target')->select(e | e.requires.includes(rf)).first();	}
+	to
+		Shortcut_ref: UfilesystemMM!"filesystem::Shortcut" (
+			name <- rf.value.name,
+
+			target <- if (not target_link.oclIsUndefined()) then (target_link.requires->select(e | e.reference.eType = target_link.reference.eType)) else OclUndefined endif
+		)
+}
+
+rule conflictingShortcut2uShortcut {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().value.oclIsTypeOf(UfilesystemMM!Shortcut) 
+			and cf.kind = #REAL
+			and if (not cf.differences.first().requires.isEmpty()) 
+					then if (not cf.differences.first().requires.first().conflict.oclIsUndefined())
+						then cf.differences.first().requires.first().conflict.kind = #REAL else true endif else true endif
+		)
+	to
+		conflicting_Shortcut: UfilesystemMM!uShortcut (
+			uleft <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+rule conflictingAttributes2uShortcut {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().oclIsTypeOf(compareMM!AttributeChange) 
+			and cf.kind = #REAL
+			and if (not cf.differences.first().refImmediateComposite().left.oclIsUndefined())
+				then cf.differences.first().refImmediateComposite().left.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut")
+				else cf.differences.first().refImmediateComposite().right.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut")
+				endif
+		)
+	to
+		Shortcut_attr_conflict: UfilesystemMM!uShortcut (
+			uleft <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+rule attributeChange2uShortcut {
+	from 
+		ac: compareMM!AttributeChange ( 
+				not ac.conflict.oclIsUndefined() 
+				and (if (ac.source = #LEFT) 
+						then ac.refImmediateComposite().left.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut") 
+						else ac.refImmediateComposite().right.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut") 
+						endif) 
+		)
+	to
+		m: UfilesystemMM!"filesystem::Shortcut" (
+			name <- if (ac.source = #LEFT) then ac.refImmediateComposite().left.name else ac.refImmediateComposite().right.name endif
+		)
+}
+
+
+
+rule Sync_Match2Sync {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Sync")
+		)
+	using {		
+			attributes_changes   : compareMM!AttributeChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!AttributeChange));
+			reference_changes    : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange));
+			noContainmentReferences : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))->select(e | e.reference.containment = false);
+
+
+
+
+			source_ref_changes : compareMM!ReferenceChange = noContainmentReferences ->select(e | e.reference.name = 'source');			target_ref_changes : compareMM!ReferenceChange = noContainmentReferences ->select(e | e.reference.name = 'target');			
+			
+	}
+	to
+		f: UfilesystemMM!"filesystem::Sync" (
+			source <- if (not m.origin.source.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))->select(e | e.origin.invalid = m.origin.source.first().invalid) else OclUndefined endif,
+			target <- if (not m.origin.target.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))->select(e | e.origin.invalid = m.origin.target.first().invalid) else OclUndefined endif
+		)
+}
+
+rule referenceChange2Sync {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Sync") 
+			and rf.conflict.oclIsUndefined()
+			and rf.equivalence.oclIsUndefined() 
+			and rf.reference.containment = true
+		)
+	to
+		fam: UfilesystemMM!"filesystem::Sync" (
+			source <- if (not rf.value.source.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))->select(e | e.origin.invalid = rf.valuesource.first().invalid) else OclUndefined endif,
+			target <- if (not rf.value.target.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))->select(e | e.origin.invalid = rf.valuetarget.first().invalid) else OclUndefined endif
+		)
+}
+
+
+
+rule File_Match2File {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::File")
+			and m.differences.isEmpty()
+		)
+	using {
+
+	}
+	to
+		conservative_File: UfilesystemMM!"filesystem::File" (
+			name <- m.origin.name
+
+
+		)
+}
+
+rule File_Match2File_without_subconflicts {
+	from
+		m: compareMM!Match (
+				not m.origin.oclIsUndefined() 
+			and not m.right.oclIsUndefined() 
+			and not m.left.oclIsUndefined() 
+			and m.origin.oclIsTypeOf(UfilesystemMM!"filesystem::File")
+			and not m.differences.isEmpty()
+			and if (m.differences ->collect(e | e.conflict)->select(i | not i.oclIsUndefined()).isEmpty()) -- no sub-conflicts on containment relations and on attribute changes
+					then true 
+					else not (m.differences ->collect(e | e.conflict)
+								->select(i | not i.oclIsUndefined())
+								->select(e | e.differences.oclIsTypeOf(compareMM!ReferenceChange))
+								->exists(i | i.differences.first().reference.containment = true) or not m.differences ->collect(e | e.conflict)
+																										->select(i | not i.oclIsUndefined())
+																										->select(e | e.differences.first().oclIsTypeOf(compareMM!AttributeChange)).isEmpty())
+					endif
+		)
+	using {		
+			attributes_changes   : compareMM!AttributeChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!AttributeChange));
+			reference_changes    : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange));
+			noContainmentReferences : compareMM!ReferenceChange = m.differences ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))->select(e | e.reference.containment = false);
+
+
+
+
+			
+			
+	}
+	to
+		conservative_File: UfilesystemMM!"filesystem::File" (
+			name <- thisModule.getFile_name(m, attributes_changes)
+
+
+		)
+}
+
+rule real_referenceChange2File {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::File") 
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #REAL else false endif
+			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) 
+					then if (not rf.requires.first().conflict.oclIsUndefined())
+						then rf.requires.first().conflict.kind = #REAL else true endif else true endif
+		)
+	to
+		File_ref: UfilesystemMM!"filesystem::File" (
+			name <- rf.value.name
+
+			
+		)
+}
+
+rule referenceChange2File {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::File") 
+			and rf.conflict.oclIsUndefined() and rf.equivalence.oclIsUndefined() and rf.reference.containment = true and rf.kind = #ADD
+		)
+	using {		
+	}
+	to
+		File_ref: UfilesystemMM!"filesystem::File" (
+			name <- rf.value.name
+
+
+		)
+}
+
+rule conflictingFile2uFile {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().value.oclIsTypeOf(UfilesystemMM!File) 
+			and cf.kind = #REAL
+			and if (not cf.differences.first().requires.isEmpty()) 
+					then if (not cf.differences.first().requires.first().conflict.oclIsUndefined())
+						then cf.differences.first().requires.first().conflict.kind = #REAL else true endif else true endif
+		)
+	to
+		conflicting_File: UfilesystemMM!uFile (
+			uleft <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+rule conflictingAttributes2uFile {
+	from
+		cf: compareMM!Conflict (
+			cf.differences.first().oclIsTypeOf(compareMM!AttributeChange) 
+			and cf.kind = #REAL
+			and if (not cf.differences.first().refImmediateComposite().left.oclIsUndefined())
+				then cf.differences.first().refImmediateComposite().left.oclIsTypeOf(UfilesystemMM!"filesystem::File")
+				else cf.differences.first().refImmediateComposite().right.oclIsTypeOf(UfilesystemMM!"filesystem::File")
+				endif
+		)
+	to
+		File_attr_conflict: UfilesystemMM!uFile (
+			uleft <- (cf.differences ->select(e | e.source = #LEFT)),
+			uright <- (cf.differences ->select(e | e.source = #RIGHT))
+		)
+}
+
+rule attributeChange2uFile {
+	from 
+		ac: compareMM!AttributeChange ( 
+				not ac.conflict.oclIsUndefined() 
+				and (if (ac.source = #LEFT) 
+						then ac.refImmediateComposite().left.oclIsTypeOf(UfilesystemMM!"filesystem::File") 
+						else ac.refImmediateComposite().right.oclIsTypeOf(UfilesystemMM!"filesystem::File") 
+						endif) 
+		)
+	to
+		m: UfilesystemMM!"filesystem::File" (
+			name <- if (ac.source = #LEFT) then ac.refImmediateComposite().left.name else ac.refImmediateComposite().right.name endif
+		)
+}
+
+
+
+--************************************************************ NO PSEUDO CONFLICT ************************************************************--
+
+
+rule pseudo_referenceChange2Drive {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Drive") 
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif
+			and rf.kind = #ADD
+			and rf.reference.containment = true
+		)
+	to
+		Drive_ref: UfilesystemMM!"filesystem::Drive" (
+			name <- rf.value.name,
+			contents <- (rf.requiredBy ->select(e | e.reference.name = 'contents'))			
+		)
+}
+
+
+rule pseudo_referenceChange2Folder {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Folder") 
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif
+			and rf.kind = #ADD
+			and rf.reference.containment = true
+		)
+	to
+		Folder_ref: UfilesystemMM!"filesystem::Folder" (
+			name <- rf.value.name,
+			contents <- (rf.requiredBy ->select(e | e.reference.name = 'contents'))			
+		)
+}
+
+
+
+
+rule pseudo_referenceChange2Sync {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::Sync") 
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif
+			and rf.kind = #ADD
+			and rf.reference.containment = true
+		)
+	to
+		Sync_ref: UfilesystemMM!"filesystem::Sync" (
+
+			source <- if (not rf.value.source.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))->select(e | e.origin.invalid = rf.value.source.first().invalid) else OclUndefined endif,
+			target <- if (not rf.value.target.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))->select(e | e.origin.invalid = rf.value.target.first().invalid) else OclUndefined endif			
+		)
+}
+
+
+rule pseudo_referenceChange2File {
+	from 
+		rf: compareMM!ReferenceChange (
+			rf.value.oclIsTypeOf(UfilesystemMM!"filesystem::File") 
+			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #PSEUDO else false endif
+			and rf.kind = #ADD
+			and rf.reference.containment = true
+		)
+	to
+		File_ref: UfilesystemMM!"filesystem::File" (
+			name <- rf.value.name
+			
+		)
+}
+
+--************************************************************ NO PSEUDO CONFLICT ************************************************************--

@@ -108,7 +108,9 @@ rule real_referenceChange2[el.name/] {
 		rf: compareMM!ReferenceChange (
 			rf.value.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]) 
 			and if (not rf.conflict.oclIsUndefined()) then rf.conflict.kind = #REAL else false endif
-			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) then rf.requires.first().conflict.kind = #REAL else true endif
+			and if (not rf.conflict.oclIsUndefined() and not rf.requires.isEmpty()) 
+					then if (not rf.requires.first().conflict.oclIsUndefined())
+						then rf.requires.first().conflict.kind = #REAL else true endif else true endif
 		)
 	to
 		[el.name/]_ref: [if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if] (
@@ -129,7 +131,7 @@ rule referenceChange2[el.name/] {
 	from 
 		rf: compareMM!ReferenceChange (
 			rf.value.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]) 
-			and rf.conflict.oclIsUndefined() and rf.equivalence.oclIsUndefined() and rf.reference.containment = true
+			and rf.conflict.oclIsUndefined() and rf.equivalence.oclIsUndefined() and rf.reference.containment = true and rf.kind = #ADD
 		)
 	using {		
 			[for (ref : EReference | el.eAllReferences)separator('\n')] [if (ref.containment = false)]
@@ -155,7 +157,9 @@ rule conflicting[el.name/]2u[el.name/] {
 		cf: compareMM!Conflict (
 			cf.differences.first().value.oclIsTypeOf(U[modelName/]MM![el.name/]) 
 			and cf.kind = #REAL
-			and if (not cf.differences.first().requires.isEmpty()) then cf.differences.first().requires.first().conflict.kind = #REAL else true endif
+			and if (not cf.differences.first().requires.isEmpty()) 
+					then if (not cf.differences.first().requires.first().conflict.oclIsUndefined())
+						then cf.differences.first().requires.first().conflict.kind = #REAL else true endif else true endif
 		)
 	to
 		conflicting_[el.name/]: U[modelName/]MM!u[el.name/] (

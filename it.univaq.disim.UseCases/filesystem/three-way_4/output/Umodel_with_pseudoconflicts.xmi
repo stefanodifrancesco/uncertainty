@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<filesystem:Filesystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:filesystem="http://it.univaq.disim/uncertainty.filesystem">
+  <drives xsi:type="filesystem:Drive" name="C">
+    <contents xsi:type="filesystem:Folder" name="Desktop">
+      <contents xsi:type="filesystem:File" name="doc"/>
+    </contents>
+    <contents xsi:type="filesystem:Folder" name="Downloads">
+      <contents xsi:type="filesystem:File" name="mp3"/>
+    </contents>
+  </drives>
+  <drives xsi:type="filesystem:Drive" name="D">
+    <contents xsi:type="filesystem:File" name="example"/>
+  </drives>
+</filesystem:Filesystem>

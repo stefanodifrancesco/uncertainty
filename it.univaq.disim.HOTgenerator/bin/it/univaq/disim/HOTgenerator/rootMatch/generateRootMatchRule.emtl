@@ -178,7 +178,7 @@
             </source>
             <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
           </body>
-          <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="');"/>
+          <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="');&#xA;"/>
           <ifExpr xsi:type="ocl.ecore:OperationCallExp">
             <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/Boolean"/>
             <source xsi:type="ocl.ecore:PropertyCallExp">
@@ -223,7 +223,7 @@
             </source>
             <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
           </body>
-          <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="');"/>
+          <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="');&#xA;"/>
           <ifExpr xsi:type="ocl.ecore:OperationCallExp">
             <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/Boolean"/>
             <source xsi:type="ocl.ecore:PropertyCallExp">
@@ -313,7 +313,7 @@
             </source>
             <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
           </body>
-          <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="')) ->collect(e | e.conflict);"/>
+          <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="')) ->collect(e | e.conflict);&#xA;"/>
           <ifExpr xsi:type="ocl.ecore:OperationCallExp">
             <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/Boolean"/>
             <source xsi:type="ocl.ecore:PropertyCallExp">
@@ -1511,7 +1511,7 @@
     </eAnnotations>
     <eAnnotations source="positions.64" references="/0/generate_rootMatchRule/%.7/%">
       <details key="start" value="1399"/>
-      <details key="end" value="1556"/>
+      <details key="end" value="1560"/>
       <details key="line" value="27"/>
     </eAnnotations>
     <eAnnotations source="positions.65" references="/0/generate_rootMatchRule/%.7/%/%">
@@ -1546,7 +1546,7 @@
     </eAnnotations>
     <eAnnotations source="positions.71" references="/0/generate_rootMatchRule/%.7/%/%.4">
       <details key="start" value="1548"/>
-      <details key="end" value="1551"/>
+      <details key="end" value="1552"/>
       <details key="line" value="28"/>
     </eAnnotations>
     <eAnnotations source="positions.72" references="/0/generate_rootMatchRule/%.7/%/%.5">
@@ -1596,7 +1596,7 @@
     </eAnnotations>
     <eAnnotations source="positions.81" references="/0/generate_rootMatchRule/%.9/%">
       <details key="start" value="1616"/>
-      <details key="end" value="1780"/>
+      <details key="end" value="1784"/>
       <details key="line" value="31"/>
     </eAnnotations>
     <eAnnotations source="positions.82" references="/0/generate_rootMatchRule/%.9/%/%">
@@ -1631,7 +1631,7 @@
     </eAnnotations>
     <eAnnotations source="positions.88" references="/0/generate_rootMatchRule/%.9/%/%.4">
       <details key="start" value="1772"/>
-      <details key="end" value="1775"/>
+      <details key="end" value="1776"/>
       <details key="line" value="32"/>
     </eAnnotations>
     <eAnnotations source="positions.89" references="/0/generate_rootMatchRule/%.9/%/%.5">
@@ -1766,7 +1766,7 @@
     </eAnnotations>
     <eAnnotations source="positions.115" references="/0/generate_rootMatchRule/%.13/%">
       <details key="start" value="2174"/>
-      <details key="end" value="2352"/>
+      <details key="end" value="2356"/>
       <details key="line" value="39"/>
     </eAnnotations>
     <eAnnotations source="positions.116" references="/0/generate_rootMatchRule/%.13/%/%">
@@ -1801,7 +1801,7 @@
     </eAnnotations>
     <eAnnotations source="positions.122" references="/0/generate_rootMatchRule/%.13/%/%.4">
       <details key="start" value="2317"/>
-      <details key="end" value="2347"/>
+      <details key="end" value="2348"/>
       <details key="line" value="40"/>
     </eAnnotations>
     <eAnnotations source="positions.123" references="/0/generate_rootMatchRule/%.13/%/%.5">
