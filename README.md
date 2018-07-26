@@ -34,7 +34,7 @@ DISCLAIMER
 ### Instructions
 
 #### Requirements
-Eclipse environment capable of executing the following plugins
+Eclipse environment capable of executing the following plugins:
   - EMF Compare
   - ATL
   - Acceleo
@@ -43,3 +43,9 @@ Eclipse environment capable of executing the following plugins
   Github repository: https://github.com/stefanodifrancesco/uncertainty.git
   
   The project  [Use Cases](https://github.com/stefanodifrancesco/uncertainty/tree/master/it.univaq.disim.UseCases) provides some examples of three-way merges for each source metamodel. Each it.univaq.disim.uncertainty.* projects contains a corresponding uncertainty metamodel. **It is necessary to install the relative editor plugins in the Eclipse environment in order to execute successfully the EMF comparisons and transformations**.
+  
+  For the transformation execution create a new *ATL launch configuration* giving as input the Umodel.ecore as metamodel and a comparison model in XMI format complying with compare.ecore.
+  
+  For the Higher-Order Transformations generation create a new *Acceleo launch configuration* giving as input one the source metamodels contained in [HOTgenerator.source metamodels](https://github.com/stefanodifrancesco/uncertainty/tree/master/it.univaq.disim.HOTgenerator/source%20metamodels) 
+  
+  The ATL project [HighOrderTrasformations](https://github.com/stefanodifrancesco/uncertainty/tree/master/it.univaq.disim.HighOrderTranformations) contains all the generated HOTs.
