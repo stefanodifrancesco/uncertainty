@@ -16,6 +16,6 @@
     <contents xsi:type="filesystem:Folder" name="run"/>
   </drives>
   <drives xsi:type="filesystem:Drive" name="H"/>
-  <syncs xsi:type="filesystem:Sync"/>
-  <syncs xsi:type="filesystem:Sync"/>
+  <syncs xsi:type="filesystem:Sync" source="//@drives.0" target="//@drives.2"/>
+  <syncs xsi:type="filesystem:Sync" source="//@drives.0" target="//@drives.4"/>
 </filesystem:Filesystem>

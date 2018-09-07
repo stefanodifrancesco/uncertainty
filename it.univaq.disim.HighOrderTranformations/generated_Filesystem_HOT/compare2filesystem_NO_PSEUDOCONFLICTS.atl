@@ -103,9 +103,10 @@ rule Drive_Match2Drive {
 			contents_submatch : compareMM!Match = m.submatches  ->select(e | m.origin.contents.includes(e.origin));
 
 			contents_attr_conflict : compareMM!Conflict = (contents_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
+
 	}
 	to
-		conservative_Drive: UfilesystemMM!"filesystem::Drive" (
+		conservative_Drive: UfilesystemMM!Drive (
 			name <- m.origin.name,
 
 			contents <- contents_submatch.append(contents_attr_conflict)
@@ -248,9 +249,10 @@ rule Folder_Match2Folder {
 			contents_submatch : compareMM!Match = m.submatches  ->select(e | m.origin.contents.includes(e.origin));
 
 			contents_attr_conflict : compareMM!Conflict = (contents_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
+
 	}
 	to
-		conservative_Folder: UfilesystemMM!"filesystem::Folder" (
+		conservative_Folder: UfilesystemMM!Folder (
 			name <- m.origin.name,
 
 			contents <- contents_submatch.append(contents_attr_conflict)
@@ -391,12 +393,32 @@ rule Shortcut_Match2Shortcut {
 		)
 	using {
 
+
+			uncertain_target : UfilesystemMM!Shortcut = if (not m.origin.target.oclIsUndefined()) then 
+													compareMM!Conflict.allInstances()
+														->select(e | e.differences.first().oclIsTypeOf(compareMM!AttributeChange))
+															->select(e | e.differences.first().refImmediateComposite().origin.name = m.origin.target.name).first()
+												else OclUndefined endif;
+
+			certain_target   : UfilesystemMM!Shortcut = if (not m.origin.target.oclIsUndefined()) then 
+													compareMM!Match.allInstances()
+														->select(e | not e.origin.oclIsUndefined())
+															->select(e | e.origin.oclIsTypeOf(UfilesystemMM!Shortcut))
+																->select(e | e.origin.name = m.origin.target.name).first()
+												else OclUndefined endif;
 	}
 	to
-		conservative_Shortcut: UfilesystemMM!"filesystem::Shortcut" (
+		conservative_Shortcut: UfilesystemMM!Shortcut (
 			name <- m.origin.name,
 
-			target <- if (not m.origin.target.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Shortcut"))->select(e | e.origin.name = m.origin.target.name) else OclUndefined endif
+			target <- if (not uncertain_target.oclIsUndefined()) then
+						       uncertain_target
+						   else
+							   if (not certain_target.oclIsUndefined()) then
+							       certain_target
+						       else OclUndefined 
+						       endif
+						   endif 
 		)
 }
 
@@ -574,9 +596,10 @@ rule File_Match2File {
 		)
 	using {
 
+
 	}
 	to
-		conservative_File: UfilesystemMM!"filesystem::File" (
+		conservative_File: UfilesystemMM!File (
 			name <- m.origin.name
 
 
@@ -714,6 +737,8 @@ rule pseudo_referenceChange2Drive {
 			and rf.kind = #ADD
 			and rf.reference.containment = true
 		)
+	using {
+	}
 	to
 		Drive_ref: UfilesystemMM!"filesystem::Drive" (
 			name <- rf.value.name,
@@ -730,6 +755,8 @@ rule pseudo_referenceChange2Folder {
 			and rf.kind = #ADD
 			and rf.reference.containment = true
 		)
+	using {
+	}
 	to
 		Folder_ref: UfilesystemMM!"filesystem::Folder" (
 			name <- rf.value.name,
@@ -748,11 +775,31 @@ rule pseudo_referenceChange2Sync {
 			and rf.kind = #ADD
 			and rf.reference.containment = true
 		)
+	using {
+
+			certain_source   : UfilesystemMM!File = compareMM!Match.allInstances()
+																	->select(e | not e.origin.oclIsUndefined())
+																		->select(e | e.origin.oclIsKindOf(UfilesystemMM!File))
+																			->select(e | rf.requiredBy->select(h | h.reference.name = 'source')->collect(f | f.value)->collect(g | g.name).includes(e.origin.name)).first();
+
+			certain_target   : UfilesystemMM!File = compareMM!Match.allInstances()
+																	->select(e | not e.origin.oclIsUndefined())
+																		->select(e | e.origin.oclIsKindOf(UfilesystemMM!File))
+																			->select(e | rf.requiredBy->select(h | h.reference.name = 'target')->collect(f | f.value)->collect(g | g.name).includes(e.origin.name)).first();
+	}
 	to
 		Sync_ref: UfilesystemMM!"filesystem::Sync" (
 
-			source <- if (not rf.value.source.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))->select(e | e.origin.invalid = rf.value.source.first().invalid) else OclUndefined endif,
-			target <- if (not rf.value.target.oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))->select(e | e.origin.invalid = rf.value.target.first().invalid) else OclUndefined endif			
+			source <- if (not certain_source.oclIsUndefined()) then
+							certain_source
+						   else
+							rf.requiredBy->select(h | h.reference.name = 'source')->collect(i | i.requires)->flatten()->select(o | not o.value.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))
+						   endif,
+			target <- if (not certain_target.oclIsUndefined()) then
+							certain_target
+						   else
+							rf.requiredBy->select(h | h.reference.name = 'target')->collect(i | i.requires)->flatten()->select(o | not o.value.oclIsTypeOf(UfilesystemMM!"filesystem::Sync"))
+						   endif			
 		)
 }
 
@@ -765,6 +812,8 @@ rule pseudo_referenceChange2File {
 			and rf.kind = #ADD
 			and rf.reference.containment = true
 		)
+	using {
+	}
 	to
 		File_ref: UfilesystemMM!"filesystem::File" (
 			name <- rf.value.name

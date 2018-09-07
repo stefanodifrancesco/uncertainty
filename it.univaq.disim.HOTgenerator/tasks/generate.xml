@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="generate" name="it.univaq.disim.HOTgenerator">
     <property name="ECLIPSE_HOME" value="../../../../../eclipse/jee-photon/eclipse"/>
-    <property name="ECLIPSE_WORKSPACE" value="../../../../../eclipse-workspace"/>
+    <property name="ECLIPSE_WORKSPACE" value="../../../../../Desktop/eclipse-workspace"/>
 
     <!-- The classpath with only the dependencies used by the project -->
     <path id="it.univaq.disim.HOTgenerator.libraryclasspath">

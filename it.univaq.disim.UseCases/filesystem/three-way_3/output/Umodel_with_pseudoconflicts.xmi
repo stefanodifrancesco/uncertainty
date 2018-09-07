@@ -19,7 +19,7 @@
     <uright name="H"/>
   </drives>
   <syncs xsi:type="filesystem_uncertainty:uSync">
-    <uleft/>
-    <uright/>
+    <uleft source="//@drives.0" target="//@drives.3/@uleft.0"/>
+    <uright source="//@drives.0" target="//@drives.3/@uright.0"/>
   </syncs>
 </filesystem:Filesystem>

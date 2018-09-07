@@ -10,6 +10,15 @@ rule pseudo_referenceChange2[el.name/] {
 			and rf.kind = #ADD
 			and rf.reference.containment = true
 		)
+	using {
+		[for (ref : EReference | el.eAllReferences)] [if (ref.containment = false)]
+
+			certain_[ref.name/]   : U[modelName/]MM![ref.eType.name/] = compareMM!Match.allInstances()
+																	->select(e | not e.origin.oclIsUndefined())
+																		->select(e | e.origin.oclIsKindOf(U[modelName/]MM![ref.eType.name/]))
+																			->select(e | rf.requiredBy->select(h | h.reference.name = '[ref.name/]')->collect(f | f.value)->collect(g | g.name).includes(e.origin.name)).first();
+			[/if][/for]
+	}
 	to
 		[el.name/]_ref: [if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if] (
 			[if (not el.eAllAttributes->isEmpty())]
@@ -17,7 +26,11 @@ rule pseudo_referenceChange2[el.name/] {
 			[attr.name/] <- rf.value.[attr.name/][/for][/if][if (not el.eAllReferences->isEmpty() and not el.eAllAttributes->isEmpty())],[/if]
 			[for (ref : EReference | el.eAllReferences)separator(',\n')] [if (ref.containment = true)]
 			[ref.name/] <- (rf.requiredBy ->select(e | e.reference.name = '[ref.name/]'))[else] [if (ref.upperBound = 1)]
-			[ref.name/] <- if (not rf.value.[ref.name/].oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]))->select(e | e.origin.[el.eAllAttributes->first().name/] = rf.value.[ref.name/].first().[el.eAllAttributes->first().name/]) else OclUndefined endif[else]
+			[ref.name/] <- if (not certain_[ref.name/].oclIsUndefined()) then
+							certain_[ref.name/]
+						   else
+							rf.requiredBy->select(h | h.reference.name = '[ref.name/]')->collect(i | i.requires)->flatten()->select(o | not o.value.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]))
+						   endif[else]
 			[ref.name/] <- if (not rf.value.[ref.name/].isEmpty()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | rf.value.[ref.name/].includes(e.origin)) else OclUndefined endif[/if][/if][/for]
 			
 		)

@@ -36,6 +36,14 @@ rule pseudo_referenceChange2[el.name/] {
 	using {		
 			[for (ref : EReference | el.eAllReferences)separator('\n')] [if (ref.containment = true)]
 			[ref.name/] : compareMM!ReferenceChange = rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange)) ->select(e | e.reference.name = '[ref.name/]');[/if][/for]
+
+			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = false)]
+
+			certain_[ref.name/]   : U[modelName/]MM![ref.eType.name/] = compareMM!Match.allInstances()
+																	->select(e | not e.origin.oclIsUndefined())
+																		->select(e | e.origin.oclIsKindOf(U[modelName/]MM![ref.eType.name/]))
+																			->select(e | rf.requiredBy->select(h | h.reference.name = '[ref.name/]')->collect(f | f.value)->collect(g | g.name).includes(e.origin.name)).first();
+			[/if][/for]
 	}
 	to
 		[el.name/]_ref: [if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if] (
@@ -45,7 +53,11 @@ rule pseudo_referenceChange2[el.name/] {
 
 			[/if]
 			[for (ref : EReference | el.eAllReferences)separator(',\n')] [if (ref.containment = false)]
-			[ref.name/] <- (rf.requiredBy ->select(e | e.oclIsTypeOf(compareMM!ReferenceChange))  ->select(e | e.reference.name = '[ref.name/]'))[else]
+			[ref.name/] <- if (not certain_[ref.name/].oclIsUndefined()) then
+							certain_[ref.name/]
+						   else
+							rf.requiredBy->select(h | h.reference.name = '[ref.name/]')->collect(i | i.requires)->flatten()->select(o | not o.value.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]))
+						   endif[else]
 			[ref.name/] <- [ref.name/] ->collect(e | e.conflict) ->collect(e | if (e.kind = #REAL) then thisModule.subREALConflicting[ref.eType.name/]2u[ref.eType.name/](e) else thisModule.subPSEUDOConflicting[ref.eType.name/]2u[ref.eType.name/](e) endif)[/if][/for]
 			
 		)

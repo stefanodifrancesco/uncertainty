@@ -23,9 +23,24 @@ rule [el.name/]_Match2[el.name/] {
 			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = true)]
 			[ref.name/]_attr_conflict : compareMM!Conflict = ([ref.name/]_submatch ->collect(sm | sm.differences)->flatten()->select(e | e.oclIsTypeOf(compareMM!AttributeChange))->collect(e | e.conflict) )->select(e | not e.oclIsUndefined());
 			[/if][/for]
+
+			[for (ref : EReference | el.eAllReferences)] [if (ref.containment = false)]
+			uncertain_[ref.name/] : U[modelName/]MM![el.name/] = if (not m.origin.[ref.name/].oclIsUndefined()) then 
+													compareMM!Conflict.allInstances()
+														->select(e | e.differences.first().oclIsTypeOf(compareMM!AttributeChange))
+															->select(e | e.differences.first().refImmediateComposite().origin.[el.eAllAttributes->first().name/] = m.origin.[ref.name/].[el.eAllAttributes->first().name/]).first()
+												else OclUndefined endif;
+
+			certain_[ref.name/]   : U[modelName/]MM![el.name/] = if (not m.origin.[ref.name/].oclIsUndefined()) then 
+													compareMM!Match.allInstances()
+														->select(e | not e.origin.oclIsUndefined())
+															->select(e | e.origin.oclIsTypeOf(U[modelName/]MM![el.name/]))
+																->select(e | e.origin.[el.eAllAttributes->first().name/] = m.origin.[ref.name/].[el.eAllAttributes->first().name/]).first()
+												else OclUndefined endif;
+			[/if][/for]
 	}
 	to
-		conservative_[el.name/]: [if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if] (
+		conservative_[el.name/]: U[modelName/]MM![el.name/] (
 			[if (not el.eAllAttributes->isEmpty())]
 			[for (attr : EAttribute | el.eAllAttributes)separator(',\n')]
 			[attr.name/] <- m.origin.[attr.name/][/for][if (not el.eAllReferences->isEmpty())],[/if]
@@ -34,7 +49,14 @@ rule [el.name/]_Match2[el.name/] {
 			[for (ref : EReference | el.eAllReferences)separator(',\n')]
 			[if (ref.containment = true)]
 			[ref.name/] <- [ref.name/]_submatch.append([ref.name/]_attr_conflict)[else][if (ref.upperBound = 1)]
-			[ref.name/] <- if (not m.origin.[ref.name/].oclIsUndefined()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | e.origin.oclIsTypeOf([if (p.oclIsUndefined())]U[modelName/]MM!"[modelName/]::[el.name/]"[else]U[modelName/]MM!"[modelName/]::[p.name/]::[el.name/]"[/if]))->select(e | e.origin.[el.eAllAttributes->first().name/] = m.origin.[ref.name/].[el.eAllAttributes->first().name/]) else OclUndefined endif[else]
+			[ref.name/] <- if (not uncertain_[ref.name/].oclIsUndefined()) then
+						       uncertain_[ref.name/]
+						   else
+							   if (not certain_[ref.name/].oclIsUndefined()) then
+							       certain_[ref.name/]
+						       else OclUndefined 
+						       endif
+						   endif [else]
 			[ref.name/] <- if (not m.origin.[ref.name/].isEmpty()) then compareMM!Match.allInstances()->select(e | not e.origin.oclIsUndefined())->select(e | m.origin.[ref.name/].includes(e.origin)) else OclUndefined endif[/if][/if][/for]
 
 		)
